@@ -1,96 +1,122 @@
-import React from 'react';
-import { Send, Paperclip, Image, Layout } from 'lucide-react';
+import React, { useState } from 'react';
+import { Send, Paperclip } from 'lucide-react';
 import './Dashboard.css';
 import Navbar from '../Components/Navbar';
 import Sidebar from '../Components/Sidebar';
+import UploadFile from '../Components/UploadFile';
+import dashboardArrow from '../assets/dashboaredarrow.svg';
+import apitestingIcon from '../assets/apitestingicons.svg';
+import guitestingIcon from '../assets/guitestingagent.svg';
+import microphoneIcon from '../assets/Microphone.svg';
 
 const Dashboard = () => {
-  const suggestedPrompts = {
-    'Automate Case generation': [
-      'Create a test case for signup page',
-      'Create a test case for user is able to click on input field',
-      'Test Case For Role Management'
+  const features = {
+    'API Testing Agent': [
+      'Generate the test cases for on-boarding flow',
+      'Generate and run the test cases from the given swagger file',
+      'Generate and run the test cases from the given swagger file'
     ],
-    'Test Case Execution': [
-      'Create a check list for Role management test cases',
-      'Create a Checklist for Signup page',
-      'Test Case For Role Management'
-    ],
-    'Code Import and Upload': [
-      'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-      'Lorem ipsum dolor sit amet, conse',
-      'Lorem Ipsum Dolor Sit Amet.'
+    'GUI Testing Agent': [
+      'Generate and run the test cases from the given swagger file',
+      'Generate and run the test cases from the given swagger file',
+      'Generate and run the test cases from the given swagger file'
     ]
   };
 
-  const PromptCard = ({ text }) => (
-    <div className="prompt-card">
-      <span className="prompt-text">{text}</span>
-      <span className="arrow-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 5l7 7-7 7" />
-        </svg>
-      </span>
+  const [isDrop, setIsDrop] = useState(false);
+
+  const handleDrop = () => {
+    setIsDrop(!isDrop);
+  };
+
+  const FeatureCard = ({ title, items, icon }) => (
+    <div className="feature-card">
+      <div className="feature-header" data-type={title.toLowerCase().split(' ')[0]}>
+        <img src={icon} alt={title} className="feature-icon" />
+        <h3>{title}</h3>
+      </div>
+      <div className="feature-items">
+        {items.map((item, index) => (
+          <div key={index} className="feature-item">
+            <span>{item}</span>
+            <img src={dashboardArrow} alt="arrow" className="arrow-icon" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 
-  return (
-    <div className="dashboard-container">
-     <Navbar />
-     <div className="main-content">
-     <Sidebar />
-      <div className="header">
-        <h1 className="main-title">
-          Unveiling the Power of Test Case Generation and Execution
-        </h1>
-        <p className="subtitle">
-          Software testing with automated case generation, execution, and meticulous scrutiny, ensuring precision and efficiency in development workflows.
-        </p>
-      </div>
+  const ChatInput = ({ handleDrop }) => {
+    const [message, setMessage] = useState('');
 
-      
-      <div className="prompts-section">
-        <div className="prompts-header">
-          <span className="sparkle">✨</span>
-          <h2 className="section-title">Suggested Prompts</h2>
-        </div>
-        
-        <div className="prompts-grid">
-          {Object.entries(suggestedPrompts).map(([category, prompts]) => (
-            <div key={category} className="category-card">
-              <h3 className="category-title">{category}</h3>
-              {prompts.map((prompt, index) => (
-                <PromptCard key={index} text={prompt} />
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      
-      <div className="input-section">
-        <div className="input-container">
+    return (
+      <div className="chat-input">
+        <div className="chat-input-wrapper">
           <input
             type="text"
+            value={message}
+            onChange={(e) => {setMessage(e.target.value)}}
             placeholder="How can I help you?"
-            className="main-input"
+            className="chat-textfield"
           />
-          <div className="action-buttons">
+        </div>
+        <div className="attachment-buttons">
+          <div className="chat-actions">
             <button className="icon-button">
-              <Paperclip className="icon" />
+              <Paperclip size={20} onClick={handleDrop} />
             </button>
             <button className="icon-button">
-              <Image className="icon" />
-            </button>
-            <button className="icon-button">
-              <Layout className="icon" />
-            </button>
-            <button className="send-button">
-              <Send className="send-icon" />
-              Send message
+              <img src={microphoneIcon} alt="microphone" width={20} height={20} />
             </button>
           </div>
+          <button className="send-button">
+            <Send size={16} /> Send
+          </button>
         </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="dashboard-container">
+      <Navbar />
+      <div className="main-content">
+        <Sidebar />
+        <div className="dashboard-content">
+          <div className="dashboard-overlay-block-1"></div>
+          <div className="dashboard-overlay-block-2"></div>
+          <div className="header">
+            <h1 className="main-title">
+              Unveiling the Power of Test Case Generation
+              <br />
+              and Execution
+            </h1>
+            <p className="subtitle">
+              Software testing with automated case generation, execution, and meticulous scrutiny, ensuring precision
+              and efficiency in development workflows.
+            </p>
+          </div>
+
+          <div className="features-section">
+            <h2>Try out our Features</h2>
+            {isDrop ? (
+              <UploadFile onClose={() => setIsDrop(false)} />
+            ) : (
+              <div className="features-grid">
+                <FeatureCard
+                  title="API Testing Agent"
+                  items={features['API Testing Agent']}
+                  icon={apitestingIcon}
+                />
+                <FeatureCard
+                  title="GUI Testing Agent"
+                  items={features['GUI Testing Agent']}
+                  icon={guitestingIcon}
+                />
+              </div>
+            )}
+            <ChatInput handleDrop={handleDrop}/>
+          </div>
         </div>
       </div>
     </div>
