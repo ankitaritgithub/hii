@@ -1,140 +1,174 @@
 import React, { useState, useRef } from 'react';
 import './UploadFile.css';
+import UploadFolder from '../assets/Uploadfolder.svg';
 
-const UploadFile = () => {
-  const [testCases, setTestCases] = useState([]);
+const UploadFile = ({ onClose }) => {
+  const [dragActive, setDragActive] = useState(false);
+  const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
-  const fileInputRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    const files = Array.from(e.dataTransfer.files);
-    handleFiles(files);
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const droppedFiles = [...e.dataTransfer.files];
+    if (droppedFiles?.length > 0) {
+      handleFileValidation(droppedFiles);
+    }
   };
 
   const handleFileInput = (e) => {
-    const files = Array.from(e.target.files);
-    handleFiles(files);
+    const selectedFiles = [...e.target.files];
+    if (selectedFiles?.length > 0) {
+      handleFileValidation(selectedFiles);
+    }
   };
 
-  const handleFiles = (files) => {
-    files.forEach(file => {
-      const testCase = {
-        id: `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        size: formatFileSize(file.size),
-        status: 'uploading'
-      };
-
-      setTestCases(prev => [...prev, testCase]);
-      simulateUpload(testCase.id);
+  const handleFileValidation = (fileList) => {
+    const validFiles = fileList.filter(file => {
+      const validTypes = ['text/plain', 'application/zip', 'application/x-yaml'];
+      const maxSize = 100 * 1024 * 1024; // Changed to 100MB as per design
+      return validTypes.includes(file.type) && file.size <= maxSize;
     });
+
+    setFiles(validFiles);
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 KB';
+    if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const simulateUpload = (id) => {
-    let progress = 0;
-    setUploadProgress(prev => ({ ...prev, [id]: 0 }));
+  const handleUpload = async () => {
+    if (files.length === 0) return;
 
-    const interval = setInterval(() => {
-      progress += 10;
-      setUploadProgress(prev => ({ ...prev, [id]: progress }));
-      
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTestCases(prev => 
-          prev.map(tc => 
-            tc.id === id ? { ...tc, status: 'completed' } : tc
-          )
-        );
+    try {
+      const formData = new FormData();
+      files.forEach(file => {
+        formData.append('files', file);
+        setUploadProgress(prev => ({
+          ...prev,
+          [file.name]: 0
+        }));
+      });
+
+      for (const file of files) {
+        for (let progress = 0; progress <= 100; progress += 10) {
+          setUploadProgress(prev => ({
+            ...prev,
+            [file.name]: progress
+          }));
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
       }
-    }, 200);
-  };
-
-  const handleButtonClick = () => {
-    fileInputRef.current.click();
+      
+      onClose();
+    } catch (error) {
+      console.error('Upload failed:', error);
+    }
   };
 
   return (
-    <div className="swagger-container">
-      <div className="swagger-header">
-        <h2 className="swagger-title">Please Upload your Swagger Document</h2>
-        <p className="swagger-subtitle">
-          Upload your Swagger YAML file (optional) and/or enter a custom prompt
-        </p>
-      </div>
-
-      <div
-        className="upload-area"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={handleDrop}
-      >
-        <div className="upload-icon-container">
-          <svg
-            className="upload-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
+    <div className="file-upload-modal">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2>Please Upload your Swagger Document</h2>
+          <p className="modal-subtitle">
+            Upload your swagger YAML file (optional) and/or enter a custom prompt
+          </p>
         </div>
-        <p className="upload-text">Select a file or drag and drop here</p>
-        <p className="upload-subtext">
-          Upload swagger docs size no more than 200 MB
-        </p>
-        <label>
-          <button className="browse-button" onClick={handleButtonClick}>Browse files </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileInput}
-            accept=".yaml,.yml,.json"
-            multiple
-          />
-        </label>
-      </div>
-
-      <div className="test-cases-container">
-        {testCases.map((testCase) => (
-          <div key={testCase.id} className="test-case">
-            <div className="test-case-info">
-              <svg
-                className="file-icon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span className="test-case-name">{testCase.name}</span>
-              <span className="test-case-size">{testCase.size}</span>
+        
+        <div className="upload-section">
+          <div
+            className={`drop-zone ${dragActive ? 'active' : ''}`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <div className="upload-icon">
+              <img src={UploadFolder} alt="Upload folder" />
             </div>
-            <div className="progress-bar-container">
-              <div
-                className="progress-bar"
-                style={{ width: `${uploadProgress[testCase.id] || 0}%` }}
-              />
-            </div>
-            <div className="progress-text">
-              {uploadProgress[testCase.id] || 0}%
-            </div>
+            <p className="drop-text">Select a file or drag and drop here</p>
+            <p className="file-types">Upload swagger doc (.zip, no more than 100 MB)</p>
+            <button
+              className="select-button"
+              onClick={() => inputRef.current?.click()}
+            >
+              Browse files
+            </button>
+            <input
+              ref={inputRef}
+              type="file"
+              className="hidden-input"
+              onChange={handleFileInput}
+              accept=".yaml,.yml,.zip"
+            />
           </div>
-        ))}
+        </div>
+
+        <div className="file-list">
+          {files.length > 0 && (
+            <>
+              {files.map((file, index) => (
+                <div key={index} className="file-item">
+                  <div className="file-info">
+                    <svg
+                      className="file-icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-size">{formatFileSize(file.size)}</span>
+                  </div>
+                  <div className="progress-container">
+                    <div className="progress-bar-container">
+                      <div
+                        className="progress-bar"
+                        style={{ width: `${uploadProgress[file.name] || 0}%` }}
+                      />
+                    </div>
+                    <div className="progress-text">
+                      {uploadProgress[file.name] || 0}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+        </div>
+
+        <div className="modal-actions">
+          <button className="cancel-button" onClick={onClose}>
+            Cancel
+          </button>
+          <button 
+            className="proceed-button"
+            onClick={handleUpload}
+            disabled={files.length === 0}
+          >
+            Proceed
+          </button>
+        </div>
       </div>
     </div>
   );

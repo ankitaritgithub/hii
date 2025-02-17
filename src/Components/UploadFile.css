@@ -1,224 +1,195 @@
-
-.swagger-container {
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 24px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 100;
-}
-
-.swagger-header {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.swagger-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1f2937;
-  margin-bottom: 8px;
-}
-
-.swagger-subtitle {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.upload-area {
-  border: 2px dashed #93c5fd;
-  border-radius: 8px;
-  padding: 32px;
-  margin-bottom: 24px;
-  position: relative;
-  text-align: center;
-}
-
-.upload-icon-container {
-  width: 64px;
-  height: 64px;
-  background-color: #dbeafe;
-  border-radius: 50%;
+.file-upload-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.modal-subtitle {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.upload-section {
+  margin-bottom: 1.5rem;
+}
+
+.drop-zone {
+  border: 2px dashed #0066cc;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.drop-zone.active {
+  border-color: #0052a3;
+  background-color: rgba(0, 102, 204, 0.05);
 }
 
 .upload-icon {
-  width: 32px;
-  height: 32px;
-  color: #3b82f6;
+  margin-bottom: 1rem;
 }
 
-.upload-text {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 8px;
+.upload-icon img {
+  width: 48px;
+  height: 48px;
 }
 
-.upload-subtext {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 16px;
+.drop-text {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 0.5rem;
 }
 
-.browse-button {
-  background-color: #3b82f6;
+.file-types {
+  color: #666;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.select-button {
+  background: #0066cc;
   color: white;
-  padding: 8px 16px;
+  border: none;
+  padding: 0.75rem 1.5rem;
   border-radius: 6px;
   cursor: pointer;
-  border: none;
-  font-size: 14px;
-  transition: background-color 0.2s;
-  z-index: 9999;
+  font-weight: 500;
+  transition: background-color 0.3s;
 }
 
-.browse-button:hover {
-  background-color: #2563eb;
+.select-button:hover {
+  background-color: #0052a3;
 }
 
-/* New Test Cases Styles */
-.test-cases-container {
-  margin-top: 20px;
+.hidden-input {
+  display: none;
 }
 
-.test-case {
-  margin-bottom: 16px;
-  animation: slideIn 0.3s ease-out;
+.file-list {
+  margin-bottom: 1.5rem;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.file-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-.test-case-info {
+.file-info {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.test-case-name {
-  font-size: 14px;
-  color: #374151;
-  flex-grow: 1;
-}
-
-.test-case-size {
-  font-size: 12px;
-  color: #6b7280;
-  min-width: 60px;
+  margin-bottom: 0.75rem;
 }
 
 .file-icon {
-  width: 16px;
-  height: 16px;
-  color: #4b5563;
+  width: 24px;
+  height: 24px;
+  margin-right: 0.75rem;
+  color: #666;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.file-size {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .progress-bar-container {
-  width: 100%;
+  flex: 1;
   height: 8px;
-  background-color: #e5e7eb;
-  border-radius: 9999px;
+  background: #e9ecef;
+  border-radius: 4px;
   overflow: hidden;
 }
 
 .progress-bar {
   height: 100%;
-  background-color: #22c55e;
-  border-radius: 9999px;
-  transition: width 0.5s ease-out;
+  background: #0066cc;
+  transition: width 0.3s ease;
 }
 
 .progress-text {
+  min-width: 45px;
   text-align: right;
-  font-size: 12px;
-  color: #6b7280;
-  margin-top: 4px;
+  font-size: 0.875rem;
+  color: #666;
 }
 
-.hidden {
-  display: none;
-}
-
-.upload-container {
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.drop-zone {
-  border: 2px dashed #ccc;
-  border-radius: 8px;
-  padding: 40px;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background-color: #f8f9fa;
-  margin-bottom: 20px;
-}
-
-.drop-zone.active {
-  border-color: #007bff;
-  background-color: rgba(0, 123, 255, 0.1);
-}
-
-.drop-content {
+.modal-actions {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 1rem;
 }
 
-.upload-icon {
-  font-size: 48px;
-  color: #6c757d;
-}
-
-.drop-zone p {
-  margin: 0;
-  color: #6c757d;
-  font-size: 16px;
-}
-
-.file-list {
+.cancel-button {
+  padding: 0.75rem 1.5rem;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #666;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.file-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #eee;
+.cancel-button:hover {
+  background-color: #f8f9fa;
 }
 
-.file-item:last-child {
-  border-bottom: none;
+.proceed-button {
+  padding: 0.75rem 1.5rem;
+  background: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.file-name {
-  font-weight: 500;
-  color: #333;
+.proceed-button:hover {
+  background-color: #0052a3;
 }
 
-.file-size {
-  color: #6c757d;
-  font-size: 14px;
+.proceed-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }

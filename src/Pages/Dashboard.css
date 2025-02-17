@@ -16,33 +16,35 @@
   .dashboard-content {
     width: 100%;
     padding: 40px;
-    /* background-color: #FFFFFF; */
+    position: relative;
+    background-color: #FFFFFF;
     height: calc(100vh - 60px);
     overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .dashboard-overlay-block-1 {
     position: absolute;
     width: 800px;
-    height: 700px;
+    height: 549px;
     border-radius: 50%;
-    top: 300px;
-    left: 1120px;
+    top: 330px;
+    left: 1143px;
     background-color: #FFDBA199;
     z-index: 1;
-    filter: blur(350px);
+    filter: blur(320px);
   }
   
   .dashboard-overlay-block-2 {
     position: absolute;
-    width: 800px;
-    height: 700px;
+    width: 671px;
+    height: 638px;
     border-radius: 50%;
-    top: 300px;
-    left: 288px;
+    top: 302px;
+    left: 456px;
     background-color: #FFC5C899;
     z-index: 1;
-    filter: blur(350px);
+    filter: blur(310px);
   }
   
   /* Header Section */
@@ -64,23 +66,28 @@
   }
   
   .subtitle {
-    color: #666666;
-    font-size: 14px;
+    color: #393838;
+    font-size: 19px;
     line-height: 1.5;
     margin: 0;
+    text-align: center;
   }
   
   /* Features Section */
   .features-section {
     max-width: 1200px;
     margin: 0 auto;
+    text-align: center;
+    
   }
   
   .features-section h2 {
     font-size: 24px;
     font-weight: 600;
-    color: #1A1A1A;
+    padding-top: 20px;
+    color: #000000;
     margin-bottom: 24px;
+    
   }
   
   .features-grid {
@@ -90,6 +97,8 @@
     gap: 32px;
     margin-bottom: 32px;
     z-index: 100;
+    
+    
   }
   
   .feature-card {
@@ -99,6 +108,7 @@
     box-shadow: 0px 12px 32px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     transform-origin: center;
+    
   }
   
   .feature-card:hover {
@@ -111,6 +121,17 @@
     align-items: center;
     gap: 16px;
     margin-bottom: 24px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 12px;
+  }
+  
+  .feature-header[data-type="api"] {
+    background-color: #FAF0FF;
+  }
+  
+  .feature-header[data-type="gui"] {
+    background-color: #F0F2FF;
   }
   
   .feature-header h3 {
@@ -122,8 +143,8 @@
   .feature-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #4361EE 0%, #7B61FF 100%);
-    border-radius: 8px;
+    /* background: linear-gradient(135deg, #4361EE 0%, #7B61FF 100%); */
+    border-radius: 10px;
     padding: 6px;
   }
   
