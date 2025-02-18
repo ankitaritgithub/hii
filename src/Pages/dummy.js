@@ -5,7 +5,6 @@ import Navbar from "../Components/Navbar";
 import Sidebar from "../Components/Sidebar";
 import UploadFile from "../Components/UploadFile";
 import WelcomeModal from "../Components/WelcomeModal";
-import ChatbotResponse from "../Components/chatbotresponse";
 import dashboardArrow from "../assets/dashboaredarrow.svg";
 import apitestingIcon from "../assets/apitestingicons.svg";
 import guitestingIcon from "../assets/guitestingagent.svg";
@@ -184,6 +183,7 @@ const Dashboard = () => {
     </div>
   );
 
+
   return (
     <div className="dashboard-container">
       <WelcomeModal
@@ -288,34 +288,15 @@ const Dashboard = () => {
                 </button>
               </div>
             </div>
-            <div className="chat-messages">
-              {chatHistory.map((message, index) => {
-                if (message.role === "user") {
-                  return (
-                    <div key={index} className="user-message">
-                      <span>{message.content}</span>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <ChatbotResponse
-                      key={index}
-                      content={message.content}
-                      suggestions={message.suggestions || [
-                        "Give more email and passwords",
-                        "Perform testing with the data",
-                      ]}
-                    />
-                  );
-                }
-              })}
-              {isLoading && (
-                <div className="loading-message">
-                  <div className="loading-spinner"></div>
-                  <span>Generating response...</span>
-                </div>
-              )}
-            </div>
+            {chatHistory.length > 0 && (
+              <div className="chat-history">
+                {chatHistory.map((chat, index) => (
+                  <div key={index} className={`chat-message ${chat.role}`}>
+                    <strong>{chat.role}:</strong> {chat.content}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

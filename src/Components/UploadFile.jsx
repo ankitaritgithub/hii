@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
-import './UploadFile.css';
-import UploadFolder from '../assets/Uploadfolder.svg';
+import React, { useState, useRef, useEffect } from "react";
+import "./UploadFile.css";
+import UploadFolder from "../assets/Uploadfolder.svg";
 
-const UploadFile = ({ onClose }) => {
+const UploadFile = ({ onClose, wsRef }) => {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -22,7 +22,7 @@ const UploadFile = ({ onClose }) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     const droppedFiles = [...e.dataTransfer.files];
     if (droppedFiles?.length > 0) {
       handleFileValidation(droppedFiles);
@@ -37,37 +37,73 @@ const UploadFile = ({ onClose }) => {
   };
 
   const handleFileValidation = (fileList) => {
-    const validFiles = fileList.filter(file => {
-      const validTypes = ['text/plain', 'application/zip', 'application/x-yaml'];
-      const maxSize = 100 * 1024 * 1024; // Changed to 100MB as per design
+    const validFiles = fileList.filter((file) => {
+      const validTypes = [
+        "text/plain",
+        "application/zip",
+        "application/x-yaml",
+        "application/yaml",
+        "text/csv",
+      ];
+      const maxSize = 100 * 1024 * 1024; 
       return validTypes.includes(file.type) && file.size <= maxSize;
     });
-
+    // setFiles((prev) => [...prev, ...validFiles]); multiple
     setFiles(validFiles);
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const getBase64 = (file) => {
+    return new Promise((resolve) => {
+      let fileInfo;
+      let baseURL = "";
+      // Make new FileReader
+      let reader = new FileReader();
+
+      // Convert the file to base64 text
+      reader.readAsDataURL(file);
+
+      // on reader load somthing...
+      // reader.onload = () => {
+      //   // Make a fileInfo Object
+      //   baseURL = reader.result;
+      //   resolve(baseURL);
+      // };
+      reader.onload = () => {
+        // Extract base64 content (after the comma)
+        const base64String = reader.result.split(',')[1]; // Get content after 'data:[mime-type];base64,'
+        resolve(base64String);  // Resolve with just the base64 content
+      };
+    });
   };
 
   const handleUpload = async () => {
     if (files.length === 0) return;
 
     try {
-      const formData = new FormData();
-      files.forEach(file => {
-        formData.append('files', file);
+      let fileContent = [];
+
+      for (const file of files) {
         setUploadProgress(prev => ({
           ...prev,
           [file.name]: 0
         }));
-      });
 
-      for (const file of files) {
+        const base64 = await getBase64(file);
+
+        let obj = {
+          file_extension: file?.type,
+          content: base64,
+        };
+        fileContent.push(obj);
+
         for (let progress = 0; progress <= 100; progress += 10) {
           setUploadProgress(prev => ({
             ...prev,
@@ -76,12 +112,34 @@ const UploadFile = ({ onClose }) => {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
+
+      wsRef.current.send(
+        JSON.stringify({
+          prompt: "",
+          file_content: fileContent,
+        })
+      );
+
+      wsRef.current.addEventListener("message", (event) => {
+        console.log("", event.data);
+      });
       
       onClose();
-    } catch (error) {
-      console.error('Upload failed:', error);
+    } catch (e) {
+      console.log(e);
     }
   };
+
+
+  
+
+  useEffect(() => {
+    // cleanup - modal close - file list state - empty
+    return () => {
+      setFiles([]);
+      setUploadProgress({});
+    };
+  }, []);
 
   return (
     <div className="file-upload-modal">
@@ -89,13 +147,14 @@ const UploadFile = ({ onClose }) => {
         <div className="modal-header">
           <h2>Please Upload your Swagger Document</h2>
           <p className="modal-subtitle">
-            Upload your swagger YAML file (optional) and/or enter a custom prompt
+            Upload your swagger YAML file (optional) and/or enter a custom
+            prompt
           </p>
         </div>
-        
+
         <div className="upload-section">
           <div
-            className={`drop-zone ${dragActive ? 'active' : ''}`}
+            className={`drop-zone ${dragActive ? "active" : ""}`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
@@ -105,7 +164,9 @@ const UploadFile = ({ onClose }) => {
               <img src={UploadFolder} alt="Upload folder" />
             </div>
             <p className="drop-text">Select a file or drag and drop here</p>
-            <p className="file-types">Upload swagger doc (.zip, no more than 100 MB)</p>
+            <p className="file-types">
+              Upload swagger doc (.zip, no more than 100 MB)
+            </p>
             <button
               className="select-button"
               onClick={() => inputRef.current?.click()}
@@ -115,9 +176,10 @@ const UploadFile = ({ onClose }) => {
             <input
               ref={inputRef}
               type="file"
+              multiple
               className="hidden-input"
               onChange={handleFileInput}
-              accept=".yaml,.yml,.zip"
+              accept=".yaml,.yml, .csv"
             />
           </div>
         </div>
@@ -138,7 +200,9 @@ const UploadFile = ({ onClose }) => {
                       <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <span className="file-name">{file.name}</span>
-                    <span className="file-size">{formatFileSize(file.size)}</span>
+                    <span className="file-size">
+                      {formatFileSize(file.size)}
+                    </span>
                   </div>
                   <div className="progress-container">
                     <div className="progress-bar-container">
@@ -161,7 +225,7 @@ const UploadFile = ({ onClose }) => {
           <button className="cancel-button" onClick={onClose}>
             Cancel
           </button>
-          <button 
+          <button
             className="proceed-button"
             onClick={handleUpload}
             disabled={files.length === 0}
