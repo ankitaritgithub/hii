@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./UploadFile.css";
 import UploadFolder from "../assets/Uploadfolder.svg";
 
-const UploadFile = ({ onClose, wsRef }) => {
+const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -62,24 +62,13 @@ const UploadFile = ({ onClose, wsRef }) => {
 
   const getBase64 = (file) => {
     return new Promise((resolve) => {
-      let fileInfo;
-      let baseURL = "";
-      // Make new FileReader
       let reader = new FileReader();
 
-      // Convert the file to base64 text
       reader.readAsDataURL(file);
 
-      // on reader load somthing...
-      // reader.onload = () => {
-      //   // Make a fileInfo Object
-      //   baseURL = reader.result;
-      //   resolve(baseURL);
-      // };
       reader.onload = () => {
-        // Extract base64 content (after the comma)
-        const base64String = reader.result.split(',')[1]; // Get content after 'data:[mime-type];base64,'
-        resolve(base64String);  // Resolve with just the base64 content
+        const base64String = reader.result.split(',')[1];
+        resolve(base64String);
       };
     });
   };
@@ -113,17 +102,8 @@ const UploadFile = ({ onClose, wsRef }) => {
         }
       }
 
-      wsRef.current.send(
-        JSON.stringify({
-          prompt: "",
-          file_content: fileContent,
-        })
-      );
-
-      wsRef.current.addEventListener("message", (event) => {
-        console.log("", event.data);
-      });
-      
+      // Instead of sending WebSocket message, call the parent's callback
+      onFileUpload(fileContent);
       onClose();
     } catch (e) {
       console.log(e);

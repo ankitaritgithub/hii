@@ -1,55 +1,70 @@
-import React from 'react';
-import './chatbotresponse.css';
-import copyIcon from '../assets/copy.svg';
-import downloadIcon from '../assets/Download.svg';
-import arrowIcon from '../assets/arrowicons.svg';
-import responsePoint from '../assets/responsepoint.svg';
+import React, { useState, useEffect } from "react";
+import "./chatbotresponse.css";
+import copyIcon from "../assets/copy.svg";
+import downloadIcon from "../assets/Download.svg";
+import arrowIcon from "../assets/arrowicons.svg";
+import responsePoint from "../assets/responsepoint.svg";
 
 const ChatbotResponse = ({ content, suggestions }) => {
+  const [displayedContent, setDisplayedContent] = useState("");
+  const [isTyping, setIsTyping] = useState(true);
+
+  useEffect(() => {
+    if (!content) return;
+
+    setDisplayedContent("");
+    setIsTyping(true);
+
+    const typingSpeed = 20;
+    let currentIndex = 0;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < content.length) {
+        setDisplayedContent((prev) => prev + content[currentIndex]);
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTyping(false);
+      }
+    }, typingSpeed);
+
+    return () => clearInterval(typingInterval);
+  }, [content]);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
   };
 
-//   const handleDownload = () => {
-//     const blob = new Blob([content], { type: 'text/plain' });
-//     const url = URL.createObjectURL(blob);
-//     const a = document.createElement('a');
-//     a.href = url;
-//     a.download = 'response.txt';
-//     document.body.appendChild(a);
-//     a.click();
-//     document.body.removeChild(a);
-//     URL.revokeObjectURL(url);
-//   };
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/download-report/newman-report.html"
+      );
 
-    const handleDownload = async () => {
-        try {
-        const response = await fetch("http://127.0.0.1:8000/download-report/newman-report.html");
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-    
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "newman-report.html"; // Set the desired filename
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-        } catch (error) {
-        console.error("Download failed:", error);
-        }
-    };
-  
-  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "newman-report.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
+
   const formatContent = (content) => {
-    // Split content into lines for email/password format
-    const lines = content.split('\n');
+    const lines = content.split("\n");
     return lines.map((line, index) => (
-      <div key={index} className="content-line">{line}</div>
+      <div key={index} className="content-line">
+        {line}
+      </div>
     ));
   };
 
@@ -60,18 +75,26 @@ const ChatbotResponse = ({ content, suggestions }) => {
           <div className="icon-wrapper">
             <img src={responsePoint} alt="Response Point" />
           </div>
-          
+
           <div className="content-section">
             <div className="formatted-content">
-              {formatContent(content)}
+              {formatContent(displayedContent)}
             </div>
-            
+
             <div className="action-buttons">
-              <button className="action-button" onClick={handleCopy}>
+              <button
+                className="action-button"
+                onClick={handleCopy}
+                disabled={isTyping}
+              >
                 <img src={copyIcon} alt="Copy" />
                 Copy
               </button>
-              <button className="action-button" onClick={handleDownload}>
+              <button
+                className="action-button"
+                onClick={handleDownload}
+                disabled={isTyping}
+              >
                 <img src={downloadIcon} alt="Download" />
                 Download
               </button>
@@ -88,7 +111,7 @@ const ChatbotResponse = ({ content, suggestions }) => {
             </div>
             <span>More suggestions:</span>
           </div>
-          
+
           <div className="suggestion-list">
             {suggestions.map((suggestion, index) => (
               <button key={index} className="suggestion-button">
