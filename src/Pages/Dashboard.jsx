@@ -17,6 +17,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
+
 const Dashboard = () => {
   const { selectedChatId, setSelectedChatId, saveChatToHistory, getChatById } =
     useChatContext();
@@ -40,6 +41,8 @@ const Dashboard = () => {
   const [isDrop, setIsDrop] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const [isFileProcessed, setIsFileProcessed] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -84,7 +87,7 @@ const Dashboard = () => {
     });
 
     const createWebSocket = () => {
-      wsRef.current = new WebSocket("ws://localhost:8000/ws/process_task");
+      wsRef.current = new WebSocket("ws://localhost:8002/ws/process_task");
 
       wsRef.current.onopen = () => {
         console.log("WebSocket connection established");
@@ -166,7 +169,9 @@ const Dashboard = () => {
 
   const handleFileSelect = (file) => {
     setSelectedFile(file);
-    setUploadProgress(0);
+    setSelectedFileName(file.name);
+    setIsFileProcessed(true);
+    setUploadProgress(100);
   };
 
   const handleDrop = () => {
@@ -179,7 +184,7 @@ const Dashboard = () => {
       const chat = getChatById(chatId);
       setChatHistory(chat?.messages || []);
       setIsChatActive(true)
-    }else {
+    } else {
       const randomid = uuid();
       navigate({
         pathname: "/dashboard",
@@ -187,7 +192,7 @@ const Dashboard = () => {
           id: randomid,
         }).toString(),
       });
-  
+
       setChatHistory([])
       setChatSessionId(randomid);
       initializeSession([], randomid);
@@ -195,42 +200,46 @@ const Dashboard = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.stopPropagation();
     if (!message && !selectedFile) return;
 
     setIsLoading(true);
     setIsChatActive(true);
     try {
-      let fileContent = "";
-      let fileExtension = "";
+      let fileContent = [];
+      let fileName = '';
 
-      if (selectedFile) {
+
+
+      if (selectedFile?.length) {
         try {
-          fileContent = await convertFileToBase64(selectedFile);
-          fileExtension = selectedFile.name.split(".").pop();
+          fileContent = selectedFile.map(file => ({
+            file_extension: file.file_extension,
+            content: file.content
+          }));
+          fileName = selectedFile[0].name;
         } catch (error) {
-          console.error("Error converting file to Base64:", error);
+          console.error("Error processing selected files:", error);
           throw new Error("Failed to process file");
         }
       }
 
       const requestBody = {
         prompt: message,
-        file_content: fileContent,
-        file_extension: fileExtension,
+        file_content: fileContent
       };
 
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        // Reset timer before sending message
-        resetInactivityTimer();
+        // resetInactivityTimer();
 
         wsRef.current.send(JSON.stringify(requestBody));
 
-        // Prepare user message
+
         const userMessage = {
           content: message,
           role: "user",
-          name: selectedFile ? `File: ${selectedFile.name}` : "user",
+          name: fileName,
         };
 
         // Update chat history
@@ -306,9 +315,13 @@ const Dashboard = () => {
     // }
   }, []);
 
+  const handleChangeMessage = (e) => {
+    setMessage(e.target.value)
+  }
+
   useEffect(() => {
     if (chatSessionId) {
-      if(chatHistory.length !== 0) {
+      if (chatHistory.length !== 0) {
         initializeSession(chatHistory, chatSessionId);
       }
     }
@@ -372,24 +385,17 @@ const Dashboard = () => {
                 <input
                   type="text"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={handleChangeMessage}
                   placeholder="How can I help you?"
                   className="chat-textfield"
-                  // disabled={isLoading}
                 />
-                {selectedFile && (
-                  <div className="file-preview">
-                    <span>{selectedFile.name}</span>
-                    {uploadProgress > 0 && uploadProgress < 100 && (
-                      <div className="upload-progress">
-                        <div
-                          className="progress-bar"
-                          style={{ width: `${uploadProgress}%` }}
-                        ></div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                {selectedFile && selectedFile?.length && selectedFile.map(item => {
+                  return (
+                    <div className="selected-file-placeholder">
+                      Selected file: {item?.name}
+                    </div>
+                  )
+                })}
               </div>
               <div className="attachment-buttons">
                 <div className="chat-actions">

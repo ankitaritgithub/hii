@@ -101,12 +101,12 @@ const Sidebar = ({ onStartNewChat }) => {
                             onClick={() => onStartNewChat(chat.id)}
                             className="history-list-item"
                           >
-                            <div className="history-item-content">
+                            <div className="history-item-content updated-styles">
                               <span className="history-preview">
                                 {getMessagePreview(chat.messages)}
                               </span>
                               <button
-                                className="delete-chat-btn"
+                                className="delete-chat-btn updated-styles"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   deleteChatFromHistory(chat.id);

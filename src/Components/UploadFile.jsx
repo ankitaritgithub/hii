@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./UploadFile.css";
 import UploadFolder from "../assets/Uploadfolder.svg";
 
-const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
+const UploadFile = ({ onClose, wsRef, onFileSelect }) => {
   const [dragActive, setDragActive] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
@@ -42,10 +42,10 @@ const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
         "text/plain",
         "application/zip",
         "application/x-yaml",
-        "application/yaml",
+        "application/yml",
         "text/csv",
       ];
-      const maxSize = 100 * 1024 * 1024; 
+      const maxSize = 100 * 1024 * 1024;
       return validTypes.includes(file.type) && file.size <= maxSize;
     });
     // setFiles((prev) => [...prev, ...validFiles]); multiple
@@ -62,13 +62,24 @@ const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
 
   const getBase64 = (file) => {
     return new Promise((resolve) => {
+      let fileInfo;
+      let baseURL = "";
+      // Make new FileReader
       let reader = new FileReader();
 
+      // Convert the file to base64 text
       reader.readAsDataURL(file);
 
+      // on reader load somthing...
+      // reader.onload = () => {
+      //   // Make a fileInfo Object
+      //   baseURL = reader.result;
+      //   resolve(baseURL);
+      // };
       reader.onload = () => {
-        const base64String = reader.result.split(',')[1];
-        resolve(base64String);
+        // Extract base64 content (after the comma)
+        const base64String = reader.result.split(',')[1]; // Get content after 'data:[mime-type];base64,'
+        resolve(base64String);  // Resolve with just the base64 content
       };
     });
   };
@@ -78,7 +89,7 @@ const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
 
     try {
       let fileContent = [];
-
+    
       for (const file of files) {
         setUploadProgress(prev => ({
           ...prev,
@@ -90,6 +101,7 @@ const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
         let obj = {
           file_extension: file?.type,
           content: base64,
+          name: file?.name
         };
         fileContent.push(obj);
 
@@ -100,10 +112,12 @@ const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
           }));
           await new Promise(resolve => setTimeout(resolve, 500));
         }
-      }
+      } 
+      // this is for multiple file
 
-      // Instead of sending WebSocket message, call the parent's callback
-      onFileUpload(fileContent);
+
+      onFileSelect(fileContent);
+
       onClose();
     } catch (e) {
       console.log(e);
@@ -111,7 +125,7 @@ const UploadFile = ({ onClose, wsRef, onFileUpload }) => {
   };
 
 
-  
+
 
   useEffect(() => {
     // cleanup - modal close - file list state - empty
