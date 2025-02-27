@@ -8,6 +8,7 @@ import WelcomeModal from "../Components/WelcomeModal";
 import ChatbotResponse from "../Components/chatbotresponse";
 import dashboardArrow from "../assets/dashboaredarrow.svg";
 import apitestingIcon from "../assets/apitestingicons.svg";
+import welcomescreenIcon from "../assets/welcomescreen.svg";
 import guitestingIcon from "../assets/guitestingagent.svg";
 import microphoneIcon from "../assets/Microphone.svg";
 import { useChatContext } from "../utils/chatHistoryUtils";
@@ -23,15 +24,20 @@ const Dashboard = () => {
     useChatContext();
 
   const features = {
-    "API Testing Agent": [
-      "Generate the test cases for on-boarding flow",
-      "Generate and run the test cases from the given swagger file",
-      "Generate and run the test cases from the given swagger file",
+    "Automate Case generation": [
+      "Generate login test cases in a csv file",
+      "Create a test case for password reset flow.",
+      "Generate Automated Test Cases For API Authentication.",
     ],
-    "GUI Testing Agent": [
-      "Generate and run the test cases from the given swagger file",
-      "Generate and run the test cases from the given swagger file",
-      "Generate and run the test cases from the given swagger file",
+    "Test Case Execution": [
+      "Execute test cases for login with valid and invalid credentials.",
+      "Run API tests for user authentication endpoints.",
+      "Perform Automated Cross-Browser Testing.",
+    ],
+    "Code Import and Upload": [
+      "Upload API test scripts for validation and execution.",
+      "Validate uploaded test cases and execute them.",
+      "Generate Execution Reports For Uploaded Test Scripts.",
     ],
   };
 
@@ -87,7 +93,7 @@ const Dashboard = () => {
     });
 
     const createWebSocket = () => {
-      wsRef.current = new WebSocket("ws://localhost:8002/ws/process_task");
+      wsRef.current = new WebSocket("ws://localhost:8000/ws/process_task");
 
       wsRef.current.onopen = () => {
         console.log("WebSocket connection established");
@@ -271,7 +277,7 @@ const Dashboard = () => {
         className="feature-header"
         data-type={title.toLowerCase().split(" ")[0]}
       >
-        <img src={icon} alt={title} className="feature-icon" />
+        {/* <img src={icon} alt={title} className="feature-icon" /> */}
         <h3>{title}</h3>
       </div>
       <div className="feature-items">
@@ -329,13 +335,14 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <WelcomeModal
+      {/* <WelcomeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-      />
-      <Navbar />
+      /> */}
+      <Sidebar onStartNewChat={handleStartNewChat} />
+      {/* <Navbar /> */}
       <div className="main-content">
-        <Sidebar onStartNewChat={handleStartNewChat} />
+        <Navbar />
         <div className="dashboard-content">
           {isDrop && (
             <UploadFile
@@ -349,34 +356,34 @@ const Dashboard = () => {
               <div className="dashboard-overlay-block-1"></div>
               <div className="dashboard-overlay-block-2"></div>
               <div className="header">
-                <h1 className="main-title">
-                  Unveiling the Power of Test Case Generation
-                  <br />
-                  and Execution
-                </h1>
+                <h1 className="main-title">Welcome to Agent QA</h1>
                 <p className="subtitle">
-                  Software testing with automated case generation, execution,
-                  and meticulous scrutiny, ensuring precision and efficiency in
-                  development workflows.
+                  What do you want to explore today? I can help you with <em>Generate Test Cases and Automate API Testing</em> & more.
                 </p>
               </div>
 
               <div className="features-section">
-                <h2>Try out our Features</h2>
+                <div className="try-prompts">
+                  <img src={welcomescreenIcon} alt="sparkles" />
+                  <span>Try Out Suggested Prompts</span>
+                </div>
 
                 <div className="features-grid">
                   <FeatureCard
-                    title="API Testing Agent"
-                    items={features["API Testing Agent"]}
-                    icon={apitestingIcon}
+                    title="Automate Case generation"
+                    items={features["Automate Case generation"]}
                   />
                   <FeatureCard
-                    title="GUI Testing Agent"
-                    items={features["GUI Testing Agent"]}
-                    icon={guitestingIcon}
+                    title="Test Case Execution"
+                    items={features["Test Case Execution"]}
+                  />
+                  <FeatureCard
+                    title="Code Import and Upload"
+                    items={features["Code Import and Upload"]}
                   />
                 </div>
               </div>
+              
             </>
           )}
           <div className={`chat-section ${isChatActive ? "active" : ""}`}>
@@ -437,12 +444,6 @@ const Dashboard = () => {
                     <ChatbotResponse
                       key={index}
                       content={message.content}
-                      suggestions={
-                        message.suggestions || [
-                          "Give more email and passwords",
-                          "Perform testing with the data",
-                        ]
-                      }
                     />
                   );
                 }

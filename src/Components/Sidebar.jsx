@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { FileText, ChevronDown } from "lucide-react";
 import "./Sidebar.css";
-import profileImage from "../assets/profileimage.svg";
-import dashboardIcon from "../assets/dashboared.svg";
-import exploreIcon from "../assets/Exploretoolsicons.svg";
-import integrationIcon from "../assets/integrationtoolsicons.svg";
-import historyIcon from "../assets/history.svg";
-import signoutIcon from "../assets/signout.svg";
-import sidebarLeftIcon from "../assets/Sidebar Left.svg";
-import settingIcon from "../assets/setting.svg";
+import dashboardIcon from "../assets/Dashboared.svg";
+import userIcon from "../assets/User.svg";
+import exploreIcon from "../assets/exploreagent.svg";
+import historyIcon from "../assets/History.svg";
+import toolsandintegrationIcon from "../assets/Tools and integration.svg";
+import signoutIcon from "../assets/Signout.svg";
+import settingIcon from "../assets/Settings.svg";
 import startNewIcon from "../assets/startnew.svg";
 import deleteChat from "../assets/Deletechat.svg";
 import { useChatContext } from "../utils/chatHistoryUtils";
+import logo from '../assets/logo.svg';
+import akiraLogo from '../assets/akira.svg';
+import profileImage from '../assets/profileimage.svg';
+import sidebarLeft from '../assets/SidebarLeft.svg';
+import settingsIcon from '../assets/Settings.svg';
+
 
 const Sidebar = ({ onStartNewChat }) => {
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
@@ -59,10 +64,35 @@ const Sidebar = ({ onStartNewChat }) => {
 
   return (
     <div className="sidebar">
-      <button className="start-button" onClick={() => onStartNewChat(null)}>
-        <img src={startNewIcon} alt="Start New" width={16} height={16} />
-        Start new
+      <div className="sidebar-header">
+        <div className="logo-container">
+          <div className="logo-circle">
+            <img src={logo} alt="Logo" />
+          </div>
+          <div className="logo-text">
+            <span className="primary-text">AgentQA</span>
+            <span className="powered-by">powered by <img src={akiraLogo} alt="Akira" className="akira-logo" /> <strong>akira™</strong></span>
+          </div>
+        </div>
+          <div className="user-profile">
+          <div className="avatar">
+            <img src={profileImage} alt="User avatar" />
+          </div>
+          <span className="username">Piyush Sonawane</span>
+          <button className="settings-btn">
+            <img src={settingsIcon} alt="settings"/>
+          </button>
+          <button className="sidebarleft-btn">
+            <img src={sidebarLeft} alt="sidebarleft"/>
+          </button>
+        </div>
+        </div>
+        <div className="sidebar-header">
+        <button className="start-button" onClick={() => onStartNewChat(null)}>
+        <img src={startNewIcon} alt="Start New Chat" />
+        Start new chat
       </button>
+        </div>
 
       <nav className="nav-menu">
         <NavItem icon={FileText} label="Summary" />
@@ -71,7 +101,7 @@ const Sidebar = ({ onStartNewChat }) => {
           label="Dashboard"
         />
         <NavItem
-          icon={() => <img src={integrationIcon} alt="Integration Tools" />}
+          icon={() => <img src={toolsandintegrationIcon} alt="Integration Tools" />}
           label="Integration Tools"
         />
         <div className="history-section">
@@ -137,22 +167,12 @@ const Sidebar = ({ onStartNewChat }) => {
             label="Explore Agent"
           />
           <NavItem
-            icon={() => <img src={signoutIcon} alt="Sign Out" />}
-            label="Sign Out"
+            icon={() => <img src={signoutIcon} alt="My Account" />}
+            label="My Account"
           />
-        </div>
-
-        <div className="profile-section">
-          <div className="profile-content">
-            <img src={profileImage} alt="Profile" className="profile-image" />
-            <span className="profile-name">Piyush Sonawane</span>
-          </div>
-          <button className="logout-button">
-            <img src={sidebarLeftIcon} alt="Logout" width={16} height={16} />
-          </button>
-        </div>
+        </div>        
+      </div> 
       </div>
-    </div>
   );
 };
 

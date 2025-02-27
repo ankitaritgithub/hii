@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Dashboard from './Pages/Dashboard';
 import Chatbotresponse from './Components/chatbotresponse';
 import { ChatProvider } from './utils/chatHistoryUtils';
+import Login from './Pages/Login';
+import Signup from './Pages/Signup';
 
 function App() {
   return (
@@ -11,9 +13,11 @@ function App() {
       <Router>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
-            <Route path='/dashboard/*' element={<Dashboard />} />
+            <Route path='/login' element={<Login />} />
+            <Route path='/signup' element={<Signup />} />
+            <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/chatbotresponse' element={<Chatbotresponse />} />
-            <Route path='*' element={<Navigate to="/dashboard" replace />} />
+            <Route path='*' element={<Navigate to="/login" replace />} />
           </Routes>
         </Suspense>
       </Router>

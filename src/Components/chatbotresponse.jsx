@@ -41,7 +41,7 @@ const ChatbotResponse = ({ content, suggestions }) => {
   const handleDownload = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8002/download-report/newman-report.html"
+        "http://127.0.0.1:8000/download-report/newman-report.html"
       );
 
       if (!response.ok) {
@@ -75,9 +75,6 @@ const ChatbotResponse = ({ content, suggestions }) => {
     <div className="chatbot-container">
       <div className="response-card">
         <div className="content-wrapper">
-          <div className="icon-wrapper">
-            <img src={responsePoint} alt="Response Point" />
-          </div>
 
           <div className="content-section">
             <div className="formatted-content">
@@ -105,26 +102,6 @@ const ChatbotResponse = ({ content, suggestions }) => {
           </div>
         </div>
       </div>
-
-      {suggestions && suggestions.length > 0 && (
-        <div className="suggestions-section">
-          <div className="suggestions-header">
-            <div className="icon-wrapper">
-              <img src={responsePoint} alt="Response Point" />
-            </div>
-            <span>More suggestions:</span>
-          </div>
-
-          <div className="suggestion-list">
-            {suggestions.map((suggestion, index) => (
-              <button key={index} className="suggestion-button">
-                <span>{suggestion}</span>
-                <img src={arrowIcon} alt="Arrow" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

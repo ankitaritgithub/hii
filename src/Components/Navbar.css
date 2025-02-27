@@ -10,7 +10,7 @@
   position: sticky;
 }
   
-.navbar-left {
+/* .navbar-left {
     display: flex;
     align-items: center;
     gap: 16px;
@@ -38,11 +38,12 @@
 .brand p span {
   color: #7e57c2;
   font-weight: bold;
-}
+} */
   
 .navbar-right {
     display: flex;
     align-items: center;
+    margin-left: auto;
     gap: 16px;
 }
   
@@ -73,22 +74,32 @@
 }
   
 .logout-button {
-    background: none;
-    border: none;
-    color: #333;
-    font-weight: bold;
-    margin-left: 10px;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-  
-.logout-button:hover {
-    color: #7e57c2;
+  display: flex;  /* Ensures icon and text are in a row */
+  align-items: center; /* Aligns icon and text vertically */
+  gap: 8px;  /* Adds space between icon and text */
+  background: none;
+  border: none;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s ease;
 }
 
-.nav-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+.logout-button:hover {
+  color: #7e57c2;
+}
+
+.span {
   color: #1f2937;
+  display: flex;
+  align-items: center;
+  padding-bottom: 10px;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: gray;
+  cursor: pointer;
+  font-size: 16px;
+  transition: color 0.3s ease;
 }
 

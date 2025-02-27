@@ -45,7 +45,6 @@
   overflow-wrap: break-word;
 }
 
-
 .content-line {
   margin-bottom: 8px;
 }
@@ -95,50 +94,4 @@
 .action-buttons button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.suggestions-section {
-  margin-top: 24px;
-}
-
-.suggestions-header {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-  color: #374151;
-  font-weight: 500;
-}
-
-.suggestion-list {
-  margin-left: 40px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.suggestion-button {
-  width: 100%;
-  text-align: left;
-  padding: 12px 16px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: white;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: all 0.2s ease;
-  color: #374151;
-  font-size: 14px;
-}
-
-.suggestion-button:hover {
-  background-color: #f9fafb;
-  border-color: #d1d5db;
-}
-
-.suggestion-button img {
-  width: 16px;
-  height: 16px;
 }
