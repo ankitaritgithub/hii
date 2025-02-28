@@ -101,7 +101,8 @@ const UploadFile = ({ onClose, wsRef, onFileSelect }) => {
         let obj = {
           file_extension: file?.type,
           content: base64,
-          name: file?.name
+          name: file?.name,
+          size: file?.size
         };
         fileContent.push(obj);
 
@@ -113,14 +114,11 @@ const UploadFile = ({ onClose, wsRef, onFileSelect }) => {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       } 
-      // this is for multiple file
-
 
       onFileSelect(fileContent);
-
       onClose();
     } catch (e) {
-      console.log(e);
+      console.error('Error processing file:', e);
     }
   };
 

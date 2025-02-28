@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import './Signup.css';
+import { useNavigate } from 'react-router-dom';
 import loginLeftBg from '../assets/loginleft.svg';
 import microsoftLogo from '../assets/microsoft.svg';
 import logo from '../assets/logo.svg';
 import akiraLogo from '../assets/akira.svg';
 
 const Signup = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +16,7 @@ const Signup = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle login logic here
+    navigate('/login');
   };
 
   return (

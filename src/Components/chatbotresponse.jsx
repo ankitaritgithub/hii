@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from "react";
 import "./chatbotresponse.css";
-import copyIcon from "../assets/copy.svg";
+import copyIcon from "../assets/copy-icon.svg";
 import downloadIcon from "../assets/Download.svg";
-import arrowIcon from "../assets/arrowicons.svg";
-import responsePoint from "../assets/responsepoint.svg";
+import AIAvatar from "../assets/AIAvatar.svg";
 
-const ChatbotResponse = ({ content, suggestions }) => {
+const ChatbotResponse = ({ content }) => {
   const [displayedContent, setDisplayedContent] = useState("");
-  const [isTyping, setIsTyping] = useState(true);
-
-
-  console.log(displayedContent, "nice boom")
+  const [isTyping, setIsTyping] = useState(false);
+  const [isContentExpanded, setContentExpanded] = useState(true);
 
   useEffect(() => {
     if (!content) return;
@@ -31,7 +28,10 @@ const ChatbotResponse = ({ content, suggestions }) => {
       }
     }, typingSpeed);
 
-    return () => clearInterval(typingInterval);
+    return () => {
+      clearInterval(typingInterval);
+      setIsTyping(false);
+    };
   }, [content]);
 
   const handleCopy = () => {
@@ -62,6 +62,14 @@ const ChatbotResponse = ({ content, suggestions }) => {
     }
   };
 
+  const splitContent = (content) => {
+    const [header, ...rest] = content.split(":");
+    return {
+      header: header.trim(),
+      body: rest.join(":").trim()
+    };
+  };
+
   const formatContent = (content) => {
     const lines = content.split("\n");
     return lines.map((line, index) => (
@@ -71,35 +79,55 @@ const ChatbotResponse = ({ content, suggestions }) => {
     ));
   };
 
+  const hasHeader = splitContent(displayedContent).header !== '';
+  const hasBody = splitContent(displayedContent).body !== '';
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(formatContent(splitContent(displayedContent).body));
+  };
+
   return (
-    <div className="chatbot-container">
-      <div className="response-card">
-        <div className="content-wrapper">
-
-          <div className="content-section">
-            <div className="formatted-content">
-              {formatContent(displayedContent)}
+    <div className="message bot">
+      <div className="bot-message">
+        <div className="message-container">   
+          {hasHeader && hasBody ? (
+            <>
+              <div className="messsage-header-wrapper">
+                <div className="message-avatar">
+                  <img src={AIAvatar} alt="AI Avatar" className="avatar-circle" />
+                </div>
+                <div className="message-header">
+                  <h3>{splitContent(displayedContent).header}</h3>
+                </div>
+              </div>
+              <div className="response-card">
+                <div className="status-indicator" style={{ position: 'absolute', top: '10px', right: '10px' }}>
+                  {isTyping ? 'Typing...' : <button className="copy-button" onClick={copyToClipboard}><img src={copyIcon} alt="Copy" /> Copy</button>}
+                </div>
+                <div className="content-text">
+                  {formatContent(splitContent(displayedContent).body)}
+                </div>
+              </div>
+            </>
+          ) : hasHeader ? (
+            <div className="messsage-header-wrapper">
+            <div className="message-avatar">
+              <img src={AIAvatar} alt="AI Avatar" className="avatar-circle" />
             </div>
-
-            <div className="action-buttons">
-              <button
-                className="action-button"
-                onClick={handleCopy}
-                disabled={isTyping}
-              >
-                <img src={copyIcon} alt="Copy" />
-                Copy
-              </button>
-              <button
-                className="action-button"
-                onClick={handleDownload}
-                disabled={isTyping}
-              >
-                <img src={downloadIcon} alt="Download" />
-                Download
-              </button>
+            <div className="message-header">
+              <h3>{splitContent(displayedContent).header}</h3>
             </div>
-          </div>
+            </div>
+          ) : hasBody ? (
+            <div className="response-card">
+              <div className="status-indicator" style={{ position: 'absolute', top: '10px', right: '10px' }}>
+                {isTyping ? 'Typing...' : <button onClick={copyToClipboard}>Copy</button>}
+              </div>
+              <div className="content-text">
+                {formatContent(splitContent(displayedContent).body)}   
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

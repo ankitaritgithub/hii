@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Send, Paperclip } from "lucide-react";
+import Vector from "../assets/Vector.svg";
 import "./Dashboard.css";
 import Navbar from "../Components/Navbar";
 import Sidebar from "../Components/Sidebar";
@@ -19,27 +20,29 @@ import {
   useSearchParams,
 } from "react-router-dom";
 
+
+
 const Dashboard = () => {
   const { selectedChatId, setSelectedChatId, saveChatToHistory, getChatById } =
     useChatContext();
 
-  const features = {
-    "Automate Case generation": [
-      "Generate login test cases in a csv file",
-      "Create a test case for password reset flow.",
-      "Generate Automated Test Cases For API Authentication.",
-    ],
-    "Test Case Execution": [
-      "Execute test cases for login with valid and invalid credentials.",
-      "Run API tests for user authentication endpoints.",
-      "Perform Automated Cross-Browser Testing.",
-    ],
-    "Code Import and Upload": [
-      "Upload API test scripts for validation and execution.",
-      "Validate uploaded test cases and execute them.",
-      "Generate Execution Reports For Uploaded Test Scripts.",
-    ],
-  };
+    const features = {
+      "Automate Case generation": [
+        "Generate test cases for login functionality",
+        "Create API test scenarios",
+        "Generate test data in CSV format"
+      ],
+      "Test Case Execution": [
+        "Run automated test cases",
+        "Execute API tests",
+        "View test results"
+      ],
+      "Code Import and Upload": [
+        "Import existing test cases",
+        "Upload test files",
+        "Manage test suites"
+      ]
+    };
 
   const INACTIVITY_TIMEOUT = 1 * 60 * 1000;
 
@@ -173,9 +176,9 @@ const Dashboard = () => {
     });
   };
 
-  const handleFileSelect = (file) => {
-    setSelectedFile(file);
-    setSelectedFileName(file.name);
+  const handleFileSelect = (files) => {
+    setSelectedFile(files);
+    setSelectedFileName(files[0]?.name || '');
     setIsFileProcessed(true);
     setUploadProgress(100);
   };
@@ -245,8 +248,17 @@ const Dashboard = () => {
         const userMessage = {
           content: message,
           role: "user",
-          name: fileName,
+          file: selectedFile?.length > 0 ? {
+            name: selectedFile[0].name,
+            type: selectedFile[0].file_extension,
+            size: selectedFile[0].size
+          } : null
         };
+
+        setChatHistory((prev) => [...prev, userMessage]);
+        setMessage("");
+        setSelectedFile(null);
+        setSelectedFileName("");
 
         // Update chat history
         const updatedHistory = [...chatHistory, userMessage];
@@ -272,24 +284,24 @@ const Dashboard = () => {
   };
 
   const FeatureCard = ({ title, items, icon }) => (
-    <div className="feature-card">
-      <div
-        className="feature-header"
+      <div className="feature-card">
+        <div
+          className="feature-header"
         data-type={title.toLowerCase().split(" ")[0]}
-      >
+        >
         {/* <img src={icon} alt={title} className="feature-icon" /> */}
-        <h3>{title}</h3>
+          <h3>{title}</h3>
+        </div>
+        <div className="feature-items">
+          {items.map((item, index) => (
+            <div key={index} className="feature-item">
+              <span>{item}</span>
+              <img src={dashboardArrow} alt="arrow" className="arrow-icon" />
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="feature-items">
-        {items.map((item, index) => (
-          <div key={index} className="feature-item">
-            <span>{item}</span>
-            <img src={dashboardArrow} alt="arrow" className="arrow-icon" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    );
 
   async function initializeSession(messages, chatId) {
     await saveChatToHistory(messages, chatId);
@@ -335,10 +347,10 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* <WelcomeModal
+      <WelcomeModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-      /> */}
+      />
       <Sidebar onStartNewChat={handleStartNewChat} />
       {/* <Navbar /> */}
       <div className="main-content">
@@ -388,6 +400,29 @@ const Dashboard = () => {
           )}
           <div className={`chat-section ${isChatActive ? "active" : ""}`}>
             <div className="chat-input">
+              {selectedFile && selectedFile?.length > 0 && (
+                <div className="selected-files-container">
+                  {selectedFile.map((item, index) => (
+                    <div key={index} className="selected-file-item">
+                      <div className="file-left">
+                        <div className="file-icon">
+                          <img src={Vector} alt="Vector" width="24" height="24" />
+                        </div>
+                        <div className="file-name">{item?.name}</div>
+                      </div>
+                      <div 
+                        className="file-delete" 
+                        onClick={() => {
+                          const newFiles = selectedFile.filter((_, i) => i !== index);
+                          setSelectedFile(newFiles);
+                        }}
+                      >
+                        ×
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="chat-input-wrapper">
                 <input
                   type="text"
@@ -396,13 +431,6 @@ const Dashboard = () => {
                   placeholder="How can I help you?"
                   className="chat-textfield"
                 />
-                {selectedFile && selectedFile?.length && selectedFile.map(item => {
-                  return (
-                    <div className="selected-file-placeholder">
-                      Selected file: {item?.name}
-                    </div>
-                  )
-                })}
               </div>
               <div className="attachment-buttons">
                 <div className="chat-actions">
@@ -435,8 +463,15 @@ const Dashboard = () => {
               {chatHistory.map((message, index) => {
                 if (message.role === "user") {
                   return (
-                    <div key={index} className="user-message">
-                      <span>{message.content}</span>
+                    <div key={index} className="message user">
+                      <div className="user-avatar">
+                        <div className="avatar-circle">👤</div>
+                      </div>
+                      <div className="message-content">
+                        <div className="content-text">
+                          <span>{message.content}</span>
+                        </div>
+                      </div>
                     </div>
                   );
                 } else {
@@ -450,8 +485,14 @@ const Dashboard = () => {
               })}
               {isLoading && (
                 <div className="loading-message">
-                  <div className="loading-spinner"></div>
-                  <span>Generating response...</span>
+                  <div className="typing-indicator">
+                    <span>Generating response</span>
+                    <div className="typing-dots">
+                      <div className="dot"></div>
+                      <div className="dot"></div>
+                      <div className="dot"></div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

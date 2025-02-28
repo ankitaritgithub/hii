@@ -347,6 +347,7 @@
 .delete-chat-btn img {
   width: 16px;
   height: 16px;
+  background-color: #000000;
 }
 
 .no-history {

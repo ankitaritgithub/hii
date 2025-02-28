@@ -13,8 +13,8 @@ function App() {
       <Router>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
-            <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<Signup />} />
+            <Route path='/login' element={<Login />} />
             <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/chatbotresponse' element={<Chatbotresponse />} />
             <Route path='*' element={<Navigate to="/login" replace />} />
