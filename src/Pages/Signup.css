@@ -149,6 +149,35 @@
     border-color: #6366f1;
     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
   }
+
+  .form-group input.error {
+    border-color: #ef4444;
+    background-color: #fff5f5;
+  }
+
+  .form-group input.error:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+  }
+
+  .error-message {
+    color: #ef4444;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .submit-error {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #fff5f5;
+    border: 1px solid #ef4444;
+    border-radius: 0.375rem;
+  }
+
+  .sign-up-button:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
   
   .password-input-container {
     position: relative;
@@ -331,17 +360,17 @@
   }
   
   @media (max-width: 1024px) {
-    .login-left {
+    .signup-left {
       display: none;
     }
     
-    .login-right {
+    .signup-right {
       flex: 1;
     }
   }
   
   @media (max-width: 640px) {
-    .login-form-container {
+    .signup-form-container {
       padding: 1rem;
     }
     

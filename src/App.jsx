@@ -6,6 +6,7 @@ import Chatbotresponse from './Components/chatbotresponse';
 import { ChatProvider } from './utils/chatHistoryUtils';
 import Login from './Pages/Login';
 import Signup from './Pages/Signup';
+import ProtectedRoute from './Components/ProtectedRoute';
 
 function App() {
   return (
@@ -13,10 +14,19 @@ function App() {
       <Router>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
+            <Route path='/dashboard' element={<Dashboard />} />
             <Route path='/signup' element={<Signup />} />
             <Route path='/login' element={<Login />} />
-            <Route path='/dashboard' element={<Dashboard />} />
-            <Route path='/chatbotresponse' element={<Chatbotresponse />} />
+            <Route path='/dashboard' element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path='/chatbotresponse' element={
+              <ProtectedRoute>
+                <Chatbotresponse />
+              </ProtectedRoute>
+            } />
             <Route path='*' element={<Navigate to="/login" replace />} />
           </Routes>
         </Suspense>

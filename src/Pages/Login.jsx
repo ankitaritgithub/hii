@@ -5,6 +5,7 @@ import loginLeftBg from '../assets/loginleft.svg';
 import microsoftLogo from '../assets/microsoft.svg';
 import logo from '../assets/logo.svg';
 import akiraLogo from '../assets/akira.svg';
+import { setAuthToken } from '../utils/auth';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,12 +13,56 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const validateForm = () => {
+    const newErrors = {};
+    if (!email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = 'Email is invalid';
+    }
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle login logic here
-    // After successful login validation, navigate to dashboard
-    navigate('/dashboard');
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch('http://127.0.0.1:8000/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        setAuthToken(data.token);
+        if (rememberMe) {
+          localStorage.setItem('email', email);
+        }
+        navigate('/dashboard');
+      } else {
+        setErrors({ submit: data.message || 'Invalid email or password' });
+      }
+    } catch (error) {
+      setErrors({ submit: 'Network error occurred. Please try again.' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,9 +104,16 @@ const Login = () => {
                 type="email"
                 id="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) {
+                    setErrors({ ...errors, email: '' });
+                  }
+                }}
                 placeholder="demo@xenonstack.com"
+                className={errors.email ? 'error' : ''}
               />
+              {errors.email && <div className="error-message">{errors.email}</div>}
             </div>
             
             <div className="form-group">
@@ -71,9 +123,16 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   id="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (errors.password) {
+                      setErrors({ ...errors, password: '' });
+                    }
+                  }}
                   placeholder="******************"
+                  className={errors.password ? 'error' : ''}
                 />
+                {errors.password && <div className="error-message">{errors.password}</div>}
                 <button
                   type="button"
                   className="toggle-password"
@@ -104,8 +163,9 @@ const Login = () => {
               </a>
             </div>
             
-            <button type="submit" className="sign-in-button">
-              Sign In
+            {errors.submit && <div className="error-message submit-error">{errors.submit}</div>}
+            <button type="submit" className="sign-in-button" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
             
             <div className="divider">

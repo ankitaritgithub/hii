@@ -130,15 +130,10 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
-.messsage-header-wrapper{
+.messsage-header-wrapper {
   display: flex;
-  align-items: center;
-}
-
-.messsage-header-wrapper{
-  display: flex;
-  align-items: center;
-
+  align-items: flex-start;
+  padding-right: 233px;
 }
 .copy-button{
   background: none;

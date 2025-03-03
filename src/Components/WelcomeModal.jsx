@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import './WelcomeModal.css';
 import welcomeStartModel from '../assets/welcomesstartmodel.svg';
 import startnewModel from '../assets/startnewmodel.svg';
-import promptModel from '../assets/Promoptmodel.svg';
+import uploadswagger from '../assets/uploadswagger.svg';
 import inputPromptModel from '../assets/inputpromptmodel.svg';
 import promptdirection from '../assets/promptdirection.svg';
 import elementIcon from '../assets/Element.svg';
+import chooseFlow from '../assets/chooseflow.svg';
+import apiTesting from '../assets/apitestingpage.svg';
+import fullscreenchatconversation from '../assets/fullscreenchatconversation.svg';
+import fileuploadconversation from '../assets/fileuploadconversation.svg';
+import chatconversation from '../assets/chatconversation.svg';
+
 
 const WelcomeModal = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1);
@@ -38,14 +44,23 @@ const WelcomeModal = ({ isOpen, onClose }) => {
         };
       case 3:
         return {
-          title: "Next Step",
+          title: "Choose Flow",
           description: "You will be re-directed to the pages where you can get the response according to the prompt",
-          image: promptModel,
-          label: "Prompt Page",
-          subtext: "Here you can download or copy result",
+          image: chooseFlow,
+          label: "Click On API Testing Agent",
+          subtext: "To start new chat for generating testcases for API testing",
           buttonText: "Next"
         };
       case 4:
+        return {
+          title: "API Testing Page",
+          description: "You will now be on the API testing Agent page where you can give custom prompt and upload swagger file ",
+          image: apiTesting,
+          label: "Give Custom Prompt and swagger file",
+          subtext: "To start new chat for generating testcases for API tetsing",
+          buttonText: "Next"
+        };
+      case 5:
         return {
           title: "Upload File",
           description: "You can upload swagger document (File format) from which you want to get testcases",
@@ -54,15 +69,42 @@ const WelcomeModal = ({ isOpen, onClose }) => {
           subtext: "To start with testcase generation swagger docs",
           buttonText: "Finish"
         };
-      case 5:
+      case 6:
+        return{
+          title: "Upload Swagger File",
+          description: "You will be re-directed to the pages where you can get the response based on Swagger doc prompt.",
+          image: uploadswagger,
+          label: "Upload your swagger file",
+          subtext: "You can upload your file here",
+          buttonText: "Finish"
+        };
+      case 7:
+        return{
+          title: "API Testing Page",
+          description: "You will now be on the API testing Agent page where you can give custom prompt and upload swagger file ",
+          image: fileuploadconversation,
+          label: "Give Custom Prompt and swagger file",
+          subtext: "To start new chat for generating testcases for API testing",
+          buttonText: "Finish"
+        };
+      case 8:
         return{
           title: "Next Step",
-          description: "You will be re-directed to the pages where you can get the response based on Swagger doc prompt.",
-          image: promptdirection,
+          description: "You will be re-directed to the pages where you can get the response according to the prompt",
+          image: chatconversation,
           label: "Prompt Page",
-          subtext: "To start with testcase generation with prompt and swagger docs",
+          subtext: "Here you can download or copy result",
           buttonText: "Finish"
-        }
+        };
+      case 9:
+        return{
+          title: "Next Step",
+          description: "You can view the response in full page with the view option available on the screen and download the response",
+          image: fullscreenchatconversation,
+          label: "Prompt Page",
+          subtext: "Here you can download or copy result",
+          buttonText: "Finish"
+        };
       default:
         return {};
     }
@@ -71,7 +113,7 @@ const WelcomeModal = ({ isOpen, onClose }) => {
   const content = getStepContent();
 
   const handleButtonClick = () => {
-    if (step === 5) {
+    if (step === 9) {
       onClose();
     } else {
       handleNext();

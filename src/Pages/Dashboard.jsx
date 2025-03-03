@@ -96,7 +96,7 @@ const Dashboard = () => {
     });
 
     const createWebSocket = () => {
-      wsRef.current = new WebSocket("ws://localhost:8000/ws/process_task");
+      wsRef.current = new WebSocket("ws://localhost:8000/ws/agentqa");
 
       wsRef.current.onopen = () => {
         console.log("WebSocket connection established");
@@ -107,23 +107,28 @@ const Dashboard = () => {
       wsRef.current.onmessage = (event) => {
         resetInactivityTimer();
 
-        const response = JSON.parse(event.data);
-        if (response?.chat_history) {
-          const responseObj = response?.chat_history?.filter(
-            (item) => item?.role !== "user"
-          );
+        console.log("Received message:", event.data); // Log the incoming message
+        try {
+          const response = JSON.parse(event.data); // Attempt to parse the JSON
+          if (response?.chat_history) {
+            const responseObj = response?.chat_history?.filter(
+                (item) => item?.role !== "user"
+              );
 
-          setChatHistory((prev) => [...prev, ...responseObj]);
+            setChatHistory((prev) => [...prev, ...responseObj]);
 
-          // Save assistant messages to history
-          responseObj.forEach((msg) => {
-            if (msg.role === "assistant") {
-              saveAssistantMessage(msg.content, selectedChatId);
-            }
-          });
+            // Save assistant messages to history
+            responseObj.forEach((msg) => {
+              if (msg.role === "assistant") {
+                saveAssistantMessage(msg.content, selectedChatId);
+              }
+            });
+          }
+          setIsLoading(false);
+          setUploadProgress(0);
+        } catch (error) {
+          console.error("Failed to parse JSON:", error); // Log the error
         }
-        setIsLoading(false);
-        setUploadProgress(0);
       };
       wsRef.current.onerror = (error) => {
         console.error("WebSocket error:", error);
