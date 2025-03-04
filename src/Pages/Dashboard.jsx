@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Paperclip } from "lucide-react";
+import { Send, Paperclip, X } from "lucide-react";
 import Vector from "../assets/Vector.svg";
 import "./Dashboard.css";
 import Navbar from "../Components/Navbar";
@@ -8,10 +8,10 @@ import UploadFile from "../Components/UploadFile";
 import WelcomeModal from "../Components/WelcomeModal";
 import ChatbotResponse from "../Components/chatbotresponse";
 import dashboardArrow from "../assets/dashboaredarrow.svg";
-import apitestingIcon from "../assets/apitestingicons.svg";
 import welcomescreenIcon from "../assets/welcomescreen.svg";
-import guitestingIcon from "../assets/guitestingagent.svg";
 import microphoneIcon from "../assets/Microphone.svg";
+import editIcon from "../assets/edit.svg";
+import fileUploadIcon from "../assets/fileuploadinput.svg";
 import { useChatContext } from "../utils/chatHistoryUtils";
 import { v4 as uuid } from "uuid";
 import {
@@ -53,6 +53,8 @@ const Dashboard = () => {
   const [selectedFileName, setSelectedFileName] = useState("");
   const [isFileProcessed, setIsFileProcessed] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const [editingMessageIndex, setEditingMessageIndex] = useState(null);
+  const [editedContent, setEditedContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isChatActive, setIsChatActive] = useState(false);
@@ -96,7 +98,7 @@ const Dashboard = () => {
     });
 
     const createWebSocket = () => {
-      wsRef.current = new WebSocket("ws://localhost:8000/ws/agentqa");
+      wsRef.current = new WebSocket("ws://10.0.0.66:8000/ws/agentqa");
 
       wsRef.current.onopen = () => {
         console.log("WebSocket connection established");
@@ -111,9 +113,9 @@ const Dashboard = () => {
         try {
           const response = JSON.parse(event.data); // Attempt to parse the JSON
           if (response?.chat_history) {
-            const responseObj = response?.chat_history?.filter(
-                (item) => item?.role !== "user"
-              );
+            const responseObj = response?.chat_history
+              ?.filter((item) => item?.role !== "user")
+              ?.map(msg => ({ ...msg, fromStorage: false }));
 
             setChatHistory((prev) => [...prev, ...responseObj]);
 
@@ -181,11 +183,28 @@ const Dashboard = () => {
     });
   };
 
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleFileSelect = (files) => {
-    setSelectedFile(files);
-    setSelectedFileName(files[0]?.name || '');
-    setIsFileProcessed(true);
-    setUploadProgress(100);
+    if (files && files.length > 0) {
+      setSelectedFile(files);
+      setSelectedFileName(files[0]?.name || '');
+      setIsFileProcessed(true);
+      setUploadProgress(100);
+    }
+  };
+
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setSelectedFileName('');
+    setIsFileProcessed(false);
+    setUploadProgress(0);
   };
 
   const handleDrop = () => {
@@ -196,7 +215,8 @@ const Dashboard = () => {
     if (chatId) {
       setChatSessionId(chatId);
       const chat = getChatById(chatId);
-      setChatHistory(chat?.messages || []);
+      const messagesWithStorageFlag = chat?.messages?.map(msg => ({ ...msg, fromStorage: true })) || [];
+      setChatHistory(messagesWithStorageFlag);
       setIsChatActive(true)
     } else {
       const randomid = uuid();
@@ -245,7 +265,7 @@ const Dashboard = () => {
       };
 
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        // resetInactivityTimer();
+        resetInactivityTimer();
 
         wsRef.current.send(JSON.stringify(requestBody));
 
@@ -253,6 +273,7 @@ const Dashboard = () => {
         const userMessage = {
           content: message,
           role: "user",
+          fromStorage: false,
           file: selectedFile?.length > 0 ? {
             name: selectedFile[0].name,
             type: selectedFile[0].file_extension,
@@ -316,9 +337,8 @@ const Dashboard = () => {
     const params = searchParams.get("id");
 
     if (params === null || params === "") {
-      // set search params
       let randomId = uuid();
-      setChatSessionId(randomId); // returns a random id
+      setChatSessionId(randomId); 
       setSearchParams({
         id: randomId,
       });
@@ -357,7 +377,6 @@ const Dashboard = () => {
         onClose={() => setIsModalOpen(false)}
       />
       <Sidebar onStartNewChat={handleStartNewChat} />
-      {/* <Navbar /> */}
       <div className="main-content">
         <Navbar />
         <div className="dashboard-content">
@@ -472,22 +491,90 @@ const Dashboard = () => {
                       <div className="user-avatar">
                         <div className="avatar-circle">👤</div>
                       </div>
-                      <div className="message-content">
-                        <div className="content-text">
-                          <span>{message.content}</span>
+                      <div className="message-content-wrapper">
+                        <div className="message-content">
+                          {editingMessageIndex === index ? (
+                            <div className="content-text">
+                              <textarea
+                                value={editedContent}
+                                onChange={(e) => setEditedContent(e.target.value)}
+                                className="edit-textarea"
+                              />
+                              <div className="edit-actions">
+                                <button
+                                  onClick={async () => {
+                                    const updatedHistory = [...chatHistory];
+                                    updatedHistory[index].content = editedContent;
+                                    setChatHistory(updatedHistory);
+                                    setEditingMessageIndex(null);
+                                    
+                                    // Send the edited message
+                                    setMessage(editedContent);
+                                    await handleSubmit(new Event('submit'));
+                                    setEditedContent("");
+                                  }}
+                                  className="save-button"
+                                >
+                                  <Send size={16} />
+                                  Send
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEditingMessageIndex(null);
+                                    setEditedContent("");
+                                  }}
+                                  className="cancel-button"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="content-text question-text">
+                              {message.content}
+                              <button 
+                                className="edit-message"
+                                onClick={() => {
+                                  setEditingMessageIndex(index);
+                                  setEditedContent(message.content);
+                                }}
+                              >
+                                <img src={editIcon} alt="Edit" />
+                              </button>
+                            </div>
+                          )}
                         </div>
+                        {message.file && (
+                          <div className="file-preview-container">
+                            <img src={fileUploadIcon} alt="File" className="file-icon" />
+                            <div className="file-details">
+                              <div className="file-name">{message.file.name}</div>
+                              <div className="file-size">{formatFileSize(message.file.size)}</div>
+                              <button className="remove-file" onClick={handleRemoveFile}>
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
                 } else {
+                  // Format the response message for report generation
+                  const formattedContent = message.content.includes('Report successfully generated') ?
+                    'Your API test cases have been successfully generated based on the provided Swagger YAML and input data from the CSV file. The test cases were executed successfully, and here is the generated Newman report.' :
+                    message.content;
+                    
                   return (
                     <ChatbotResponse
                       key={index}
-                      content={message.content}
+                      content={formattedContent}
+                      isNewResponse={!message.fromStorage}
                     />
                   );
                 }
               })}
+
               {isLoading && (
                 <div className="loading-message">
                   <div className="typing-indicator">

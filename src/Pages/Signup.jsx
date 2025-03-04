@@ -34,11 +34,11 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // if (!validateForm()) return;
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
-      const response = await fetch('http://127.0.0.1:8000/signup', {
+      const response = await fetch('http://10.0.0.66:8000/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

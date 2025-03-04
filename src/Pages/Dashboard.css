@@ -5,6 +5,10 @@
   display: flex;
 }
 
+.message-content-wrapper {
+  width: 85%;
+}
+
 .chat-container {
   flex: 1;
   display: flex;
@@ -50,6 +54,8 @@
   font-size: 20px;
   
 }
+
+
 
 .edit-button {
   background: none;
@@ -97,12 +103,80 @@
   margin-bottom: 4px;
 }
 
+.question-text{
+  display: flex;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between;
+}
+
 .message .message-content {
   flex: 1 1;
-  background-color: #F9FAFB;
-  padding: 16px 20px;
+  background-color: white;
+  padding: 10px 14px;
   border-radius: 8px;
-  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+  position: relative;
+}
+
+.message.user .message-content {
+  background-color: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  align-items: center; 
+}
+
+.file-preview-container {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: white;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+}
+
+.file-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 4px;
+}
+
+.file-details {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.remove-file {
+  color: #6B7280;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .message-text {
@@ -123,10 +197,65 @@
   justify-content: center;
   opacity: 0.7;
   transition: opacity 0.2s;
+  /* position: absolute; */
+  /* top: 12px;
+  right: 12px; */
 }
 
 .message .edit-message:hover {
   opacity: 1;
+}
+
+.edit-textarea {
+  width: 100%;
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #374151;
+  resize: vertical;
+  margin-bottom: 12px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.save-button,
+.cancel-button {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-button {
+  background-color: #4361EE;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.save-button:hover {
+  background-color: #3651D4;
+}
+
+.cancel-button {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #E5E7EB;
+}
+
+.cancel-button:hover {
+  background-color: #F9FAFB;
 }
 
 .message .message-content h3 {
@@ -138,8 +267,11 @@
 
 .message .content-text {
   color: #374151;
-  font-size: 14px;
+  width:100%;
+  font-size: 16px;
   line-height: 1.6;
+  font-weight: 500;
+  /* margin-bottom: 8px; */
 }
   
   .main-content {

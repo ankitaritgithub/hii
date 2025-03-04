@@ -4,18 +4,23 @@ import copyIcon from "../assets/copy-icon.svg";
 import downloadIcon from "../assets/Download.svg";
 import AIAvatar from "../assets/AIAvatar.svg";
 
-const ChatbotResponse = ({ content }) => {
+const ChatbotResponse = ({ content, isNewResponse }) => {
   const [displayedContent, setDisplayedContent] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [isContentExpanded, setContentExpanded] = useState(true);
 
   useEffect(() => {
     if (!content) return;
 
+    if (!isNewResponse) {
+      setDisplayedContent(content);
+      setIsTyping(false);
+      return;
+    }
+
     setDisplayedContent("");
     setIsTyping(true);
 
-    const typingSpeed = 20;
+    const typingSpeed = 30;
     let currentIndex = 0;
 
     const typingInterval = setInterval(() => {
@@ -32,16 +37,20 @@ const ChatbotResponse = ({ content }) => {
       clearInterval(typingInterval);
       setIsTyping(false);
     };
-  }, [content]);
+  }, [content, isNewResponse]);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content);
-  };
+
 
   const handleDownload = async () => {
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/download-report/newman-report.html"
+        "http://10.0.0.66:8007/download-report/newman-report.html",
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/html'
+          }
+        }
       );
 
       if (!response.ok) {
@@ -83,13 +92,19 @@ const ChatbotResponse = ({ content }) => {
   const hasBody = splitContent(displayedContent).body !== '';
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(formatContent(splitContent(displayedContent).body));
+    navigator.clipboard.writeText(content);
   };
+
+  const handleViewReport = () => {
+    window.open('http://127.0.0.1:8000/view-report/newman-report.html', '_blank');
+  };
+
+  const isReportResponse = displayedContent.includes('API test cases') && displayedContent.includes('Newman report');
 
   return (
     <div className="message bot">
       <div className="bot-message">
-        <div className="message-container">   
+        <div className="message-container">
           {hasHeader && hasBody ? (
             <>
               <div className="messsage-header-wrapper">
@@ -106,17 +121,27 @@ const ChatbotResponse = ({ content }) => {
                 </div>
                 <div className="content-text">
                   {formatContent(splitContent(displayedContent).body)}
+                  {isReportResponse && !isTyping && (
+                    <div className="report-actions">
+                      <button onClick={handleDownload} className="report-button">
+                        ⬇️ Download Report
+                      </button>
+                      <button onClick={handleViewReport} className="report-button">
+                        ↗️ View Report
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
           ) : hasHeader ? (
             <div className="messsage-header-wrapper">
-            <div className="message-avatar">
-              <img src={AIAvatar} alt="AI Avatar" className="avatar-circle" />
-            </div>
-            <div className="message-header">
-              <h3>{splitContent(displayedContent).header}</h3>
-            </div>
+              <div className="message-avatar">
+                <img src={AIAvatar} alt="AI Avatar" className="avatar-circle" />
+              </div>
+              <div className="message-header">
+                <h3>{splitContent(displayedContent).header}</h3>
+              </div>
             </div>
           ) : hasBody ? (
             <div className="response-card">
@@ -124,7 +149,17 @@ const ChatbotResponse = ({ content }) => {
                 {isTyping ? 'Typing...' : <button onClick={copyToClipboard}>Copy</button>}
               </div>
               <div className="content-text">
-                {formatContent(splitContent(displayedContent).body)}   
+                {formatContent(splitContent(displayedContent).body)}
+                {isReportResponse && !isTyping && (
+                  <div className="report-actions">
+                    <button onClick={handleDownload} className="report-button">
+                      ⬇️ Download Report
+                    </button>
+                    <button onClick={handleViewReport} className="report-button">
+                      ↗️ View Report
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ) : null}

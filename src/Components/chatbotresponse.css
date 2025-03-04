@@ -30,7 +30,7 @@
   display: flex;
   flex-direction: row;
   gap: 12px;
-  margin-right:200px
+  /* margin-right:200px */
 }
 
 .message-header h3 {
@@ -38,6 +38,7 @@
   font-size: 14px;
   color: #111827;
   font-weight: 500;
+  margin-top: 6px;
 }
 
 .message-body {
@@ -49,11 +50,8 @@
 
 .content-text {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.6;
   color: #374151;
   font-size: 14px;
-  display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
@@ -61,11 +59,15 @@
   background-color: #F9FAFB;
   border-radius: 12px;
   padding: 16px 20px;
-  margin-left: 43px;
+  margin-left: 33px;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 16px;
   padding-left: 30px;
   position: relative;
+  gap: 4px;
+  width: 1038px;
+  display: flex;
+  /* margin-right: 369px; */
 }
 
 
@@ -82,23 +84,29 @@
   margin-top: 16px;
 }
 
+.report-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
 .report-button {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 8px 16px;
   background-color: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #4F46E5;
   border-radius: 6px;
-  color: #374151;
+  color: #4F46E5;
   font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .report-button:hover {
-  background-color: #f3f4f6;
-  border-color: #d1d5db;
+  background-color: #F5F3FF;
 }
 
 .action-button {
@@ -130,10 +138,37 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.download-button {
+  background-color: #4F46E5;
+  color: white;
+  border: none;
+}
+
+.download-button:hover {
+  background-color: #4338CA;
+}
+
+.download-button img {
+  opacity: 1;
+}
+
+.view-button {
+  background-color: white;
+  color: #4F46E5;
+  border: 1px solid #4F46E5;
+}
+
+.view-button:hover {
+  background-color: #F5F3FF;
+}
 .messsage-header-wrapper {
   display: flex;
-  align-items: flex-start;
-  padding-right: 233px;
+  /* align-items: center; */
+  padding-right: 367px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 .copy-button{
   background: none;

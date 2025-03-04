@@ -138,7 +138,6 @@ const Sidebar = ({ onStartNewChat }) => {
                               <button
                                 className="delete-chat-btn updated-styles"
                                 onClick={(e) => {
-                                  e.stopPropagation();
                                   deleteChatFromHistory(chat.id);
                                 }}
                               >
