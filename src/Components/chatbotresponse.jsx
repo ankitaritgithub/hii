@@ -100,6 +100,7 @@ const ChatbotResponse = ({ content, isNewResponse }) => {
   };
 
   const isReportResponse = displayedContent.includes('API test cases') && displayedContent.includes('Newman report');
+  const isFileSelected = displayedContent.includes('test.yaml') || displayedContent.includes('.csv');
 
   return (
     <div className="message bot">
@@ -121,7 +122,7 @@ const ChatbotResponse = ({ content, isNewResponse }) => {
                 </div>
                 <div className="content-text">
                   {formatContent(splitContent(displayedContent).body)}
-                  {isReportResponse && !isTyping && (
+                  {(isReportResponse || isFileSelected) && !isTyping && (
                     <div className="report-actions">
                       <button onClick={handleDownload} className="report-button">
                         ⬇️ Download Report
@@ -150,7 +151,7 @@ const ChatbotResponse = ({ content, isNewResponse }) => {
               </div>
               <div className="content-text">
                 {formatContent(splitContent(displayedContent).body)}
-                {isReportResponse && !isTyping && (
+                {(isReportResponse || isFileSelected) && !isTyping && (
                   <div className="report-actions">
                     <button onClick={handleDownload} className="report-button">
                       ⬇️ Download Report

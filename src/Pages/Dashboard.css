@@ -2,7 +2,6 @@
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #F9FAFB;
-  display: flex;
 }
 
 .message-content-wrapper {
@@ -27,6 +26,7 @@
   padding: 20px;
   border-bottom: 1px solid #E5E7EB;
 }
+
 
 .chat-header h2 {
   margin: 0;
@@ -616,6 +616,11 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
+  .main-content-grid {
+    width: 100%;
+    display: flex;
+
+  }
 
   @keyframes spin {
     to {
@@ -799,3 +804,14 @@
       grid-template-columns: 1fr;
     }
   }
+
+  .middle-panel {
+    width: 420px;
+    background-color: #F9FAFB;
+    border-right: 1px solid #F4F5F6;
+    padding: 15px;
+  }
+  .middle-panel-hidden {
+    display: none;
+  }
+  

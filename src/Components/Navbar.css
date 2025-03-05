@@ -10,14 +10,57 @@
   position: sticky;
 }
   
-/* .navbar-left {
+.navbar-left {
     display: flex;
     align-items: center;
     gap: 16px;
 }
 
+.navbar-logo-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 21px;
+  /* margin-left: 5px; */
+  margin-top: 19px;
+}
+
+.navbar-logo-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+}
+
+.navbar-logo-text {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start; 
+}
+
+.navbar-akira-logo {
+  height: 14px;
+  width: auto;
+  vertical-align: middle;
+}
+
+.navbar-primary-text {
+  font-family: 'Rubik', sans-serif; 
+  font-size: 16px;                  
+  font-weight: 600;                
+  line-height: 27.06px;             
+  letter-spacing: -0.03em;         
+  width: 64px;                      
+  height: 27px;
+
+}
+
+.navbar-powered-by {
+  font-size: 12px;
+  color: #000000;
+}
+
   
-.logo {
+/* .logo {
   width: 40px;
   height: 40px;
   margin-right: 10px;

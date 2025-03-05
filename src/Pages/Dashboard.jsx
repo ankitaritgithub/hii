@@ -12,6 +12,11 @@ import welcomescreenIcon from "../assets/welcomescreen.svg";
 import microphoneIcon from "../assets/Microphone.svg";
 import editIcon from "../assets/edit.svg";
 import fileUploadIcon from "../assets/fileuploadinput.svg";
+import MyAccountIcons from '../assets/MyAccount.svg';
+import copyRightIcon from '../assets/copy-right.svg';
+import downloadfileIcon from '../assets/Downloadfile.svg';
+import closeIcon from '../assets/close.svg';
+import SplitScreen from "../Components/splitscreen";
 import { useChatContext } from "../utils/chatHistoryUtils";
 import { v4 as uuid } from "uuid";
 import {
@@ -25,24 +30,25 @@ import {
 const Dashboard = () => {
   const { selectedChatId, setSelectedChatId, saveChatToHistory, getChatById } =
     useChatContext();
+  const [showSplitScreen, setShowSplitScreen] = useState(false);
 
-    const features = {
-      "Automate Case generation": [
-        "Generate test cases for login functionality",
-        "Create API test scenarios",
-        "Generate test data in CSV format"
-      ],
-      "Test Case Execution": [
-        "Run automated test cases",
-        "Execute API tests",
-        "View test results"
-      ],
-      "Code Import and Upload": [
-        "Import existing test cases",
-        "Upload test files",
-        "Manage test suites"
-      ]
-    };
+  const features = {
+    "Automate Case generation": [
+      "Generate test cases for login functionality",
+      "Create API test scenarios",
+      "Generate test data in CSV format"
+    ],
+    "Test Case Execution": [
+      "Run automated test cases",
+      "Execute API tests",
+      "View test results"
+    ],
+    "Code Import and Upload": [
+      "Import existing test cases",
+      "Upload test files",
+      "Manage test suites"
+    ]
+  };
 
   const INACTIVITY_TIMEOUT = 1 * 60 * 1000;
 
@@ -61,6 +67,7 @@ const Dashboard = () => {
   const wsRef = useRef(null);
   const inactivityTimerRef = useRef(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isMiddlePanelHidden, setIsMiddlePanelHidden] = useState(false);
 
   const [chatSessionId, setChatSessionId] = useState(null);
 
@@ -109,7 +116,7 @@ const Dashboard = () => {
       wsRef.current.onmessage = (event) => {
         resetInactivityTimer();
 
-        console.log("Received message:", event.data); // Log the incoming message
+        console.log("Received message:", JSON.parse(event.data)); // Log the incoming message
         try {
           const response = JSON.parse(event.data); // Attempt to parse the JSON
           if (response?.chat_history) {
@@ -197,6 +204,8 @@ const Dashboard = () => {
       setSelectedFileName(files[0]?.name || '');
       setIsFileProcessed(true);
       setUploadProgress(100);
+      setShowSplitScreen(true);
+      setIsChatActive(true);
     }
   };
 
@@ -240,6 +249,7 @@ const Dashboard = () => {
 
     setIsLoading(true);
     setIsChatActive(true);
+    setShowSplitScreen(true);
     try {
       let fileContent = [];
       let fileName = '';
@@ -310,24 +320,24 @@ const Dashboard = () => {
   };
 
   const FeatureCard = ({ title, items, icon }) => (
-      <div className="feature-card">
-        <div
-          className="feature-header"
+    <div className="feature-card">
+      <div
+        className="feature-header"
         data-type={title.toLowerCase().split(" ")[0]}
-        >
+      >
         {/* <img src={icon} alt={title} className="feature-icon" /> */}
-          <h3>{title}</h3>
-        </div>
-        <div className="feature-items">
-          {items.map((item, index) => (
-            <div key={index} className="feature-item">
-              <span>{item}</span>
-              <img src={dashboardArrow} alt="arrow" className="arrow-icon" />
-            </div>
-          ))}
-        </div>
+        <h3>{title}</h3>
       </div>
-    );
+      <div className="feature-items">
+        {items.map((item, index) => (
+          <div key={index} className="feature-item">
+            <span>{item}</span>
+            <img src={dashboardArrow} alt="arrow" className="arrow-icon" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   async function initializeSession(messages, chatId) {
     await saveChatToHistory(messages, chatId);
@@ -338,7 +348,7 @@ const Dashboard = () => {
 
     if (params === null || params === "") {
       let randomId = uuid();
-      setChatSessionId(randomId); 
+      setChatSessionId(randomId);
       setSearchParams({
         id: randomId,
       });
@@ -376,54 +386,15 @@ const Dashboard = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
-      <Sidebar onStartNewChat={handleStartNewChat} />
-      <div className="main-content">
-        <Navbar />
-        <div className="dashboard-content">
-          {isDrop && (
-            <UploadFile
-              onClose={() => setIsDrop(false)}
-              onFileSelect={handleFileSelect}
-              wsRef={wsRef}
-            />
-          )}
-          {!isChatActive && (
-            <>
-              <div className="dashboard-overlay-block-1"></div>
-              <div className="dashboard-overlay-block-2"></div>
-              <div className="header">
-                <h1 className="main-title">Welcome to Agent QA</h1>
-                <p className="subtitle">
-                  What do you want to explore today? I can help you with <em>Generate Test Cases and Automate API Testing</em> & more.
-                </p>
-              </div>
+      <Navbar />
 
-              <div className="features-section">
-                <div className="try-prompts">
-                  <img src={welcomescreenIcon} alt="sparkles" />
-                  <span>Try Out Suggested Prompts</span>
-                </div>
-
-                <div className="features-grid">
-                  <FeatureCard
-                    title="Automate Case generation"
-                    items={features["Automate Case generation"]}
-                  />
-                  <FeatureCard
-                    title="Test Case Execution"
-                    items={features["Test Case Execution"]}
-                  />
-                  <FeatureCard
-                    title="Code Import and Upload"
-                    items={features["Code Import and Upload"]}
-                  />
-                </div>
-              </div>
-              
-            </>
-          )}
+      <div className="main-content-grid">
+        <SplitScreen />
+        {/* TODO - add chat window  */}
+        <div className={`middle-panel ${!isMiddlePanelHidden ? "" : "middle-panel-hidden"}`}>
           <div className={`chat-section ${isChatActive ? "active" : ""}`}>
-            <div className="chat-input">
+
+            {/* <div className="chat-input-split">
               {selectedFile && selectedFile?.length > 0 && (
                 <div className="selected-files-container">
                   {selectedFile.map((item, index) => (
@@ -434,8 +405,8 @@ const Dashboard = () => {
                         </div>
                         <div className="file-name">{item?.name}</div>
                       </div>
-                      <div 
-                        className="file-delete" 
+                      <div
+                        className="file-delete"
                         onClick={() => {
                           const newFiles = selectedFile.filter((_, i) => i !== index);
                           setSelectedFile(newFiles);
@@ -482,8 +453,8 @@ const Dashboard = () => {
                   <Send size={16} /> {isLoading ? "Sending..." : "Send"}
                 </button>
               </div>
-            </div>
-            <div className="chat-messages">
+            </div> */}
+            <div className="chat-list">
               {chatHistory.map((message, index) => {
                 if (message.role === "user") {
                   return (
@@ -507,7 +478,7 @@ const Dashboard = () => {
                                     updatedHistory[index].content = editedContent;
                                     setChatHistory(updatedHistory);
                                     setEditingMessageIndex(null);
-                                    
+
                                     // Send the edited message
                                     setMessage(editedContent);
                                     await handleSubmit(new Event('submit'));
@@ -532,7 +503,7 @@ const Dashboard = () => {
                           ) : (
                             <div className="content-text question-text">
                               {message.content}
-                              <button 
+                              <button
                                 className="edit-message"
                                 onClick={() => {
                                   setEditingMessageIndex(index);
@@ -560,39 +531,233 @@ const Dashboard = () => {
                     </div>
                   );
                 } else {
-                  // Format the response message for report generation
-                  const formattedContent = message.content.includes('Report successfully generated') ?
-                    'Your API test cases have been successfully generated based on the provided Swagger YAML and input data from the CSV file. The test cases were executed successfully, and here is the generated Newman report.' :
-                    message.content;
-                    
                   return (
                     <ChatbotResponse
                       key={index}
-                      content={formattedContent}
-                      isNewResponse={!message.fromStorage}
+
                     />
                   );
                 }
               })}
 
-              {isLoading && (
-                <div className="loading-message">
-                  <div className="typing-indicator">
-                    <span>Generating response</span>
-                    <div className="typing-dots">
-                      <div className="dot"></div>
-                      <div className="dot"></div>
-                      <div className="dot"></div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
+          </div>
+          <div className="main-content">
+            <div className="dashboard-content">
+              {isDrop && (
+                <UploadFile
+                  onClose={() => setIsDrop(false)}
+                  onFileSelect={handleFileSelect}
+                  wsRef={wsRef}
+                />
+              )}
+              {!isChatActive && (
+                <>
+                  <div className="dashboard-overlay-block-1"></div>
+                  <div className="dashboard-overlay-block-2"></div>
+                  <div className="header">
+                    <h1 className="main-title">Welcome to Agent QA</h1>
+                    <p className="subtitle">
+                      What do you want to explore today? I can help you with <em>Generate Test Cases and Automate API Testing</em> & more.
+                    </p>
+                  </div>
+
+                  <div className="features-section">
+                    <div className="try-prompts">
+                      <img src={welcomescreenIcon} alt="sparkles" />
+                      <span>Try Out Suggested Prompts</span>
+                    </div>
+
+                    <div className="features-grid">
+                      <FeatureCard
+                        title="Automate Case generation"
+                        items={features["Automate Case generation"]}
+                      />
+                      <FeatureCard
+                        title="Test Case Execution"
+                        items={features["Test Case Execution"]}
+                      />
+                      <FeatureCard
+                        title="Code Import and Upload"
+                        items={features["Code Import and Upload"]}
+                      />
+                    </div>
+                  </div>
+
+                </>
+              )}
+              <div className={`chat-section ${isChatActive ? "active" : ""}`}>
+
+                <div className="chat-input">
+                  {selectedFile && selectedFile?.length > 0 && (
+                    <div className="selected-files-container">
+                      {selectedFile.map((item, index) => (
+                        <div key={index} className="selected-file-item">
+                          <div className="file-left">
+                            <div className="file-icon">
+                              <img src={Vector} alt="Vector" width="24" height="24" />
+                            </div>
+                            <div className="file-name">{item?.name}</div>
+                          </div>
+                          <div
+                            className="file-delete"
+                            onClick={() => {
+                              const newFiles = selectedFile.filter((_, i) => i !== index);
+                              setSelectedFile(newFiles);
+                            }}
+                          >
+                            ×
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="chat-input-wrapper">
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={handleChangeMessage}
+                      placeholder="How can I help you?"
+                      className="chat-textfield"
+                    />
+                  </div>
+                  <div className="attachment-buttons">
+                    <div className="chat-actions">
+                      <button
+                        className="icon-button"
+                        disabled={isLoading}
+                        onClick={() => setIsDrop(true)}
+                      >
+                        <Paperclip size={20} />
+                      </button>
+                      <button className="icon-button" disabled={isLoading}>
+                        <img
+                          src={microphoneIcon}
+                          alt="microphone"
+                          width={20}
+                          height={20}
+                        />
+                      </button>
+                    </div>
+                    <button
+                      className="send-button"
+                      onClick={handleSubmit}
+                      disabled={isLoading || (!message && !selectedFile)}
+                    >
+                      <Send size={16} /> {isLoading ? "Sending..." : "Send"}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="chat-messages">
+                  {chatHistory.map((message, index) => {
+                    if (message.role === "user") {
+                      return (
+                        <div key={index} className="message user">
+                          <div className="user-avatar">
+                            <div className="avatar-circle">👤</div>
+                          </div>
+                          <div className="message-content-wrapper">
+                            <div className="message-content">
+                              {editingMessageIndex === index ? (
+                                <div className="content-text">
+                                  <textarea
+                                    value={editedContent}
+                                    onChange={(e) => setEditedContent(e.target.value)}
+                                    className="edit-textarea"
+                                  />
+                                  <div className="edit-actions">
+                                    <button
+                                      onClick={async () => {
+                                        const updatedHistory = [...chatHistory];
+                                        updatedHistory[index].content = editedContent;
+                                        setChatHistory(updatedHistory);
+                                        setEditingMessageIndex(null);
+
+                                        // Send the edited message
+                                        setMessage(editedContent);
+                                        await handleSubmit(new Event('submit'));
+                                        setEditedContent("");
+                                      }}
+                                      className="save-button"
+                                    >
+                                      <Send size={16} />
+                                      Send
+                                    </button>
+                                    <button
+                                      onClick={() => {
+                                        setEditingMessageIndex(null);
+                                        setEditedContent("");
+                                      }}
+                                      className="cancel-button"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="content-text question-text">
+                                  {message.content}
+                                  <button
+                                    className="edit-message"
+                                    onClick={() => {
+                                      setEditingMessageIndex(index);
+                                      setEditedContent(message.content);
+                                    }}
+                                  >
+                                    <img src={editIcon} alt="Edit" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            {message.file && (
+                              <div className="file-preview-container">
+                                <img src={fileUploadIcon} alt="File" className="file-icon" />
+                                <div className="file-details">
+                                  <div className="file-name">{message.file.name}</div>
+                                  <div className="file-size">{formatFileSize(message.file.size)}</div>
+                                  <button className="remove-file" onClick={handleRemoveFile}>
+                                    <X size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <ChatbotResponse
+                          key={index}
+                          content={message.content}
+                          isNewResponse={!message.fromStorage}
+                        />
+                      );
+                    }
+                  })}
+
+                  {isLoading && (
+                    <div className="loading-message">
+                      <div className="typing-indicator">
+                        <span>Generating response</span>
+                        <div className="typing-dots">
+                          <div className="dot"></div>
+                          <div className="dot"></div>
+                          <div className="dot"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
-    </div>
-  );
+      );
 };
 
-export default Dashboard;
+      export default Dashboard;

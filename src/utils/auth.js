@@ -1,4 +1,3 @@
-// auth.js
 export const setAuthToken = (token) => {
     if (token) {
         localStorage.setItem('token', token);

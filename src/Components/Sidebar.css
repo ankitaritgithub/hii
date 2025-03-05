@@ -1,9 +1,10 @@
 .sidebar {
   width: 320px;
   height: 100vh;
+  display:none;
   background-color: #ffffff;
   color: #333333;
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
   padding: 10px;
   border-right: 1px solid #e5e7eb;
