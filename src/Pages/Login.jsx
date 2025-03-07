@@ -48,9 +48,10 @@ const Login = () => {
       });
 
       const data = await response.json();
+      console.log(data)
       
-      if (response.ok) {
-        setAuthToken(data.token);
+      if (data?.access_token) {
+        setAuthToken(data.access_token);
         if (rememberMe) {
           localStorage.setItem('email', email);
         }

@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { FileText, ChevronDown } from "lucide-react";
 import "./Sidebar.css";
 import dashboardIcon from "../assets/Dashboared.svg";
-import userIcon from "../assets/User.svg";
 import exploreIcon from "../assets/exploreagent.svg";
-import historyIcon from "../assets/History.svg";
-import toolsandintegrationIcon from "../assets/Tools and integration.svg";
-import signoutIcon from "../assets/Signout.svg";
+import historyIcon from "../assets/history.svg";
+import toolsandintegrationIcon from "../assets/Integration.svg";
 import settingIcon from "../assets/Settings.svg";
-import startNewIcon from "../assets/startnew.svg";
-import deleteChat from "../assets/Deletechat.svg";
+import startNewIcon from "../assets/chaticons.svg";
+import MyAccountIcons from '../assets/MyAccount.svg';
+import deleteChat from "../assets/Delete.svg";
 import { useChatContext } from "../utils/chatHistoryUtils";
 import logo from '../assets/logo.svg';
 import akiraLogo from '../assets/akira.svg';
@@ -18,7 +17,7 @@ import sidebarLeft from '../assets/SidebarLeft.svg';
 import settingsIcon from '../assets/Settings.svg';
 
 
-const Sidebar = ({ onStartNewChat }) => {
+const Sidebar = ({ onStartNewChat, isSidebar, setIsSidebar }) => {
   const [isHistoryOpen, setIsHistoryOpen] = useState(true);
   const { chats, setSelectedChatId, deleteChatFromHistory } = useChatContext();
 
@@ -63,7 +62,7 @@ const Sidebar = ({ onStartNewChat }) => {
   const groupedChats = groupChatsByDate(chats);
 
   return (
-    <div className="sidebar">
+    <div className={`sidebar ${isSidebar ? "sidebar-open": ""}`}>
       <div className="sidebar-header">
         <div className="logo-container">
           <div className="logo-circle">
@@ -82,7 +81,7 @@ const Sidebar = ({ onStartNewChat }) => {
           <button className="settings-btn">
             <img src={settingsIcon} alt="settings"/>
           </button>
-          <button className="sidebarleft-btn">
+          <button className="sidebarleft-btn" onClick={() => setIsSidebar(false)}>
             <img src={sidebarLeft} alt="sidebarleft"/>
           </button>
         </div>
@@ -166,7 +165,7 @@ const Sidebar = ({ onStartNewChat }) => {
             label="Explore Agent"
           />
           <NavItem
-            icon={() => <img src={signoutIcon} alt="My Account" />}
+            icon={() => <img src={MyAccountIcons} alt="My Account" />}
             label="My Account"
           />
         </div>        

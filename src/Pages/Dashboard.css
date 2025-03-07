@@ -101,6 +101,7 @@
   justify-content: space-between;
   padding: 0 16px;
   margin-bottom: 4px;
+  flex-direction: column;
 }
 
 .question-text{
@@ -271,6 +272,7 @@
   font-size: 16px;
   line-height: 1.6;
   font-weight: 500;
+  margin-left: 16px;
   /* margin-bottom: 8px; */
 }
   
@@ -325,7 +327,7 @@
   }
   
   .main-title {
-    background: linear-gradient(90deg, #4361EE 0%, #7B61FF 50%, #9D61FF 100%);
+    background: linear-gradient(90deg, #4361EE 0%, #7B61FF 50%, #FF71BF 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -336,7 +338,7 @@
   }
   
   .subtitle {
-    color: #666666;
+    color: #403F3F;
     font-size: 25px;
     line-height: 1.5;
     margin: 0 auto;
@@ -368,13 +370,13 @@
 
   .try-prompts span {
     font-size: 22px;
-    font-weight: 500;
-    color: #333333;
+    font-weight: 400;
+    color: #000000;
   }
 
   .try-prompts img {
-    width: 24px;
-    height: 24px;
+    width: 45px;
+    height: 45px;
   }
   
   .features-grid {
@@ -476,7 +478,7 @@
     background: #FFFFFF;
     border-radius: 15px;
     padding: 16px;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+    /* box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05); */
     z-index: 100;
   }
   
@@ -494,6 +496,7 @@
     border-radius: 4px;
     font-size: 14px;
     margin-bottom: 4px;
+    outline-color: #CACBCE;
   }
   
   .chat-textfield::placeholder {
@@ -553,7 +556,7 @@
   
   .chat-section.active {
     margin-top: 2rem;
-    margin-left: 95px;
+    margin-left: 295px;
   }
   
   .chat-history {
@@ -810,6 +813,7 @@
     background-color: #F9FAFB;
     border-right: 1px solid #F4F5F6;
     padding: 15px;
+    
   }
   .middle-panel-hidden {
     display: none;

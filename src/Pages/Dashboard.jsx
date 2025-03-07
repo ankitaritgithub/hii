@@ -31,28 +31,30 @@ const Dashboard = () => {
   const { selectedChatId, setSelectedChatId, saveChatToHistory, getChatById } =
     useChatContext();
   const [showSplitScreen, setShowSplitScreen] = useState(false);
+  const [isSidebar, setIsSidebar] = useState(false)
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false); 
 
   const features = {
     "Automate Case generation": [
-      "Generate test cases for login functionality",
-      "Create API test scenarios",
-      "Generate test data in CSV format"
+      "Generate login test cases in a csv file",
+      "Create a test case for password reset flow.",
+      "Generate automated test cases for API authentication."
     ],
     "Test Case Execution": [
-      "Run automated test cases",
-      "Execute API tests",
-      "View test results"
+      "Execute test cases for login with valid and invalid credentials.",
+      "Run API tests for user authentication endpoints.",
+      "Perform automated cross-browser testing."
     ],
     "Code Import and Upload": [
-      "Import existing test cases",
-      "Upload test files",
-      "Manage test suites"
+      "Upload API test scripts for validation and execution.",
+      "Validate uploaded test cases and execute them.",
+      "Generate execution reports for uploaded test scripts."
     ]
   };
 
   const INACTIVITY_TIMEOUT = 1 * 60 * 1000;
 
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDrop, setIsDrop] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
@@ -70,6 +72,7 @@ const Dashboard = () => {
   const [isMiddlePanelHidden, setIsMiddlePanelHidden] = useState(false);
 
   const [chatSessionId, setChatSessionId] = useState(null);
+  const [realJson, setRealJson] = useState(null);
 
   const navigate = useNavigate();
 
@@ -97,6 +100,18 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    const hasSeenModal = localStorage.getItem('hasSeenWelcomeModal');
+    if (!hasSeenModal) {
+      setIsModalOpen(true);
+    }
+  }, []);
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    localStorage.setItem('hasSeenWelcomeModal', 'true');
+  };
+
+  useEffect(() => {
     const resetTimerEvents = ["mousemove", "keydown", "click"];
     const resetTimerHandler = resetInactivityTimer;
 
@@ -116,9 +131,16 @@ const Dashboard = () => {
       wsRef.current.onmessage = (event) => {
         resetInactivityTimer();
 
-        console.log("Received message:", JSON.parse(event.data)); // Log the incoming message
+        console.log("Raw message received:", event.data);
+        if (event.data.startsWith("Unexpected")) {
+          console.error("Received unexpected message:", event.data);
+          return;
+        }
         try {
-          const response = JSON.parse(event.data); // Attempt to parse the JSON
+          const response = JSON.parse(event.data); 
+          console.log("Response:", response); // SETTING RESPONSE IN STATE
+          setRealJson(response);
+          console.log("Received message:", response); // Log the incoming message
           if (response?.chat_history) {
             const responseObj = response?.chat_history
               ?.filter((item) => item?.role !== "user")
@@ -319,25 +341,64 @@ const Dashboard = () => {
     }
   };
 
-  const FeatureCard = ({ title, items, icon }) => (
-    <div className="feature-card">
-      <div
-        className="feature-header"
-        data-type={title.toLowerCase().split(" ")[0]}
-      >
-        {/* <img src={icon} alt={title} className="feature-icon" /> */}
-        <h3>{title}</h3>
+  const handleKeyPress = (event) => {
+    if (event.key === 'Enter') {
+      handleSubmit(event);
+    }
+  };
+
+  const FeatureCard = ({ title, items, icon }) => {
+    const handleFeatureClick = (items) => {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        const messageObj = {
+        prompt: items,
+        role: "user"
+      };
+        wsRef.current.send(JSON.stringify(messageObj));
+
+        const userMessage = {
+          content: items,
+          role: "user",
+          fromStorage: false,
+          file: selectedFile?.length > 0 ? {
+            name: selectedFile[0].name,
+            type: selectedFile[0].file_extension,
+            size: selectedFile[0].size
+          } : null
+        };
+        
+        setChatHistory(prev => [...prev, userMessage]);
+        setIsLoading(true);
+        setIsChatActive(true);
+      } else {
+        console.error("WebSocket connection not open");
+      }
+    };
+
+    return (
+      <div className="feature-card">
+        <div
+          className="feature-header"
+          data-type={title.toLowerCase().split(" ")[0]}
+        >
+          <h3>{title}</h3>
+        </div>
+        <div className="feature-items">
+          {items.map((item, index) => (
+            <div 
+              key={index} 
+              className="feature-item"
+              onClick={() => handleFeatureClick(item)}
+              style={{ cursor: 'pointer' }}
+            >
+              <span>{item}</span>
+              <img src={dashboardArrow} alt="arrow" className="arrow-icon" />
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="feature-items">
-        {items.map((item, index) => (
-          <div key={index} className="feature-item">
-            <span>{item}</span>
-            <img src={dashboardArrow} alt="arrow" className="arrow-icon" />
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    );
+  };
 
   async function initializeSession(messages, chatId) {
     await saveChatToHistory(messages, chatId);
@@ -384,165 +445,24 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <WelcomeModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleCloseModal}
       />
       <Navbar />
-
+      <Sidebar onStartNewChat={handleStartNewChat} isSidebar={isSidebar} setIsSidebar={setIsSidebar} setIsHistoryOpen={setIsHistoryOpen}/>
       <div className="main-content-grid">
-        <SplitScreen />
+        <SplitScreen setIsSidebar={setIsSidebar} onStartNewChat={handleStartNewChat} setIsHistoryOpen={setIsHistoryOpen} />
         {/* TODO - add chat window  */}
-        <div className={`middle-panel ${!isMiddlePanelHidden ? "" : "middle-panel-hidden"}`}>
-          <div className={`chat-section ${isChatActive ? "active" : ""}`}>
-
-            {/* <div className="chat-input-split">
-              {selectedFile && selectedFile?.length > 0 && (
-                <div className="selected-files-container">
-                  {selectedFile.map((item, index) => (
-                    <div key={index} className="selected-file-item">
-                      <div className="file-left">
-                        <div className="file-icon">
-                          <img src={Vector} alt="Vector" width="24" height="24" />
-                        </div>
-                        <div className="file-name">{item?.name}</div>
-                      </div>
-                      <div
-                        className="file-delete"
-                        onClick={() => {
-                          const newFiles = selectedFile.filter((_, i) => i !== index);
-                          setSelectedFile(newFiles);
-                        }}
-                      >
-                        ×
-                      </div>
-                    </div>
-                  ))}
+        <div className={`middle-panel ${isMiddlePanelHidden ? "" : "middle-panel-hidden"}`}>
+          <div className="chat-list">
+            {chatHistory.map((chat, index) => (
+              <div key={index} className="chat-item">
+                <div className="chat-item-header">
+                  <span className="chat-item-name">{chat.content}</span>
                 </div>
-              )}
-              <div className="chat-input-wrapper">
-                <input
-                  type="text"
-                  value={message}
-                  onChange={handleChangeMessage}
-                  placeholder="How can I help you?"
-                  className="chat-textfield"
-                />
               </div>
-              <div className="attachment-buttons">
-                <div className="chat-actions">
-                  <button
-                    className="icon-button"
-                    disabled={isLoading}
-                    onClick={() => setIsDrop(true)}
-                  >
-                    <Paperclip size={20} />
-                  </button>
-                  <button className="icon-button" disabled={isLoading}>
-                    <img
-                      src={microphoneIcon}
-                      alt="microphone"
-                      width={20}
-                      height={20}
-                    />
-                  </button>
-                </div>
-                <button
-                  className="send-button"
-                  onClick={handleSubmit}
-                  disabled={isLoading || (!message && !selectedFile)}
-                >
-                  <Send size={16} /> {isLoading ? "Sending..." : "Send"}
-                </button>
-              </div>
-            </div> */}
-            <div className="chat-list">
-              {chatHistory.map((message, index) => {
-                if (message.role === "user") {
-                  return (
-                    <div key={index} className="message user">
-                      <div className="user-avatar">
-                        <div className="avatar-circle">👤</div>
-                      </div>
-                      <div className="message-content-wrapper">
-                        <div className="message-content">
-                          {editingMessageIndex === index ? (
-                            <div className="content-text">
-                              <textarea
-                                value={editedContent}
-                                onChange={(e) => setEditedContent(e.target.value)}
-                                className="edit-textarea"
-                              />
-                              <div className="edit-actions">
-                                <button
-                                  onClick={async () => {
-                                    const updatedHistory = [...chatHistory];
-                                    updatedHistory[index].content = editedContent;
-                                    setChatHistory(updatedHistory);
-                                    setEditingMessageIndex(null);
-
-                                    // Send the edited message
-                                    setMessage(editedContent);
-                                    await handleSubmit(new Event('submit'));
-                                    setEditedContent("");
-                                  }}
-                                  className="save-button"
-                                >
-                                  <Send size={16} />
-                                  Send
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setEditingMessageIndex(null);
-                                    setEditedContent("");
-                                  }}
-                                  className="cancel-button"
-                                >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="content-text question-text">
-                              {message.content}
-                              <button
-                                className="edit-message"
-                                onClick={() => {
-                                  setEditingMessageIndex(index);
-                                  setEditedContent(message.content);
-                                }}
-                              >
-                                <img src={editIcon} alt="Edit" />
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                        {message.file && (
-                          <div className="file-preview-container">
-                            <img src={fileUploadIcon} alt="File" className="file-icon" />
-                            <div className="file-details">
-                              <div className="file-name">{message.file.name}</div>
-                              <div className="file-size">{formatFileSize(message.file.size)}</div>
-                              <button className="remove-file" onClick={handleRemoveFile}>
-                                <X size={14} />
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                } else {
-                  return (
-                    <ChatbotResponse
-                      key={index}
-
-                    />
-                  );
-                }
-              })}
-
-            </div>
+            ))}
           </div>
-          </div>
+        </div>
           <div className="main-content">
             <div className="dashboard-content">
               {isDrop && (
@@ -618,6 +538,7 @@ const Dashboard = () => {
                       type="text"
                       value={message}
                       onChange={handleChangeMessage}
+                      onKeyPress={handleKeyPress}
                       placeholder="How can I help you?"
                       className="chat-textfield"
                     />
@@ -670,14 +591,35 @@ const Dashboard = () => {
                                   <div className="edit-actions">
                                     <button
                                       onClick={async () => {
-                                        const updatedHistory = [...chatHistory];
-                                        updatedHistory[index].content = editedContent;
-                                        setChatHistory(updatedHistory);
+                                        // Get all messages up to the edited message
+                                        const messagesUpToEdit = chatHistory.slice(0, index + 1);
+                                        // Update the edited message
+                                        messagesUpToEdit[index].content = editedContent;
+                                        
+                                        // Set chat history to only include messages up to the edit
+                                        setChatHistory(messagesUpToEdit);
                                         setEditingMessageIndex(null);
 
-                                        // Send the edited message
-                                        setMessage(editedContent);
-                                        await handleSubmit(new Event('submit'));
+                                        // Send the updated conversation to LLM
+                                        const requestBody = {
+                                          prompt: editedContent,
+                                          file_content: [],
+                                          edit_index: index, // Add index to identify which message was edited
+                                          conversation_history: messagesUpToEdit.map(msg => ({
+                                            content: msg.content,
+                                            role: msg.role
+                                          }))
+                                        };
+                                        
+                                        if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                                          resetInactivityTimer();
+                                          wsRef.current.send(JSON.stringify(requestBody));
+                                          setIsLoading(true);
+                                          setIsChatActive(true);
+                                        } else {
+                                          console.error("WebSocket is not open yet");
+                                          setIsLoading(false);
+                                        }
                                         setEditedContent("");
                                       }}
                                       className="save-button"
@@ -732,6 +674,7 @@ const Dashboard = () => {
                           key={index}
                           content={message.content}
                           isNewResponse={!message.fromStorage}
+                          realJsonn={realJson}
                         />
                       );
                     }
@@ -754,10 +697,9 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
+          </div>
         </div>
-      </div>
       );
 };
 
-      export default Dashboard;
+export default Dashboard;

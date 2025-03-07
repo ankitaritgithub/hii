@@ -15,8 +15,8 @@ function App() {
       <Router>
         <Suspense fallback={<div>Loading...</div>}>
           <Routes>
-            <Route path='/SplitScreen' element={<SplitScreen />} />
-            <Route path='/dashboard' element={<Dashboard />} />
+            {/* <Route path='/SplitScreen' element={<SplitScreen />} /> */}
+            {/* <Route path='/dashboard' element={<Dashboard />} /> */}
             <Route path='/signup' element={<Signup />} />
             <Route path='/login' element={<Login />} />
             <Route path='/dashboard' element={
