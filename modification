@@ -1,0 +1,748 @@
+@media screen and (max-width: 1440px) and (max-height: 1540px) {
+    .chat-container {
+      margin: 16px;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+    }
+
+    .message-content-wrapper {
+      width: 95%;
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+    }
+
+    .message .message-content {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .file-details {
+      gap: 1rem;
+    }
+
+    .main-content {
+      padding: 0 16px;
+      height: calc(100vh - 64px);
+      overflow-y: auto;
+    }
+
+    .selected-files-container {
+      max-width: 100%;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .message-text {
+      font-size: 14px;
+    }
+
+    .file-preview-container {
+      max-width: calc(100% - 24px);
+    }
+
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+    }
+
+    .chat-header {
+      padding: 16px;
+    }
+
+    .chat-header h2 {
+      font-size: 15px;
+    }
+  }************************* dashboared.jsx
+
+
+
+
+
+******************************chatresponsive.jsx 
+@media screen and (max-width: 1440px) and (max-height: 1540px) {
+  .message-container {
+    width: 100%;
+    max-height: calc(100vh - 200px);
+  }
+
+  .content-text,
+  .markdown-body {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .response-card {
+    width: calc(100% - 40px);
+    margin-left: 20px;
+    padding: 16px;
+    max-height: calc(100vh - 240px);
+    overflow-y: auto;
+  }
+
+  .message.bot {
+    padding: 0 8px;
+    height: auto;
+  }
+
+  .message-content {
+    gap: 8px;
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+  }
+
+  .markdown-body pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .markdown-body table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  .avatar-circle {
+    width: 28px;
+    height: 28px;
+  }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+chatbotresponsive.jsx
+import React, { useState, useEffect } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import "./chatbotresponse.css";
+import copyIcon from "../assets/copy-icon.svg";
+import downloadIcon from "../assets/Download.svg";
+import AIAvatar from "../assets/AIAvatar.svg";
+import tickIcon from '../assets/tick.svg';
+import { IoChevronDownOutline } from 'react-icons/io5';
+
+const ChatbotResponse = ({ content, isNewResponse, realJsonn}) => {
+  console.log(content, "CONTENT IS ALWAYS")
+
+  const [displayedContent, setDisplayedContent] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+
+  useEffect(() => {
+    if (!content) return;
+
+    if (!isNewResponse) {
+      setDisplayedContent(content);
+      console.log(content,"HERE IS THE CONTENT");
+      setIsTyping(false);
+      return;
+    }
+
+    setDisplayedContent("");
+    setIsTyping(true);
+
+    const typingSpeed = 30;
+    let currentIndex = -1;
+
+    const typingInterval = setInterval(() => {
+      if (currentIndex < content.length - 1) {
+        setDisplayedContent((prev) => prev + content[currentIndex]);
+        currentIndex++;
+      } else {
+        clearInterval(typingInterval);
+        setIsTyping(false);
+      }
+    }, typingSpeed);
+
+    return () => {
+      clearInterval(typingInterval);
+      setIsTyping(false);
+    };
+  }, [content, isNewResponse]);
+
+
+
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8006/download-report/newman-report.html",
+        {
+          method: 'GET',
+          headers: {
+            'Accept': 'text/html',
+            'Content-Type': 'text/html',
+          },
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "newman-report.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(content);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  const handleViewReport = () => {
+    window.open('http://127.0.0.1:8000/view-report/newman-report.html', '_blank');
+  };
+
+  const isReportResponse = displayedContent.includes('Report successfully generated.') && displayedContent.includes('Download the HTML');
+
+  return (
+    <div className="message bot">
+      <div className="bot-message">
+        <div className="message-container">
+          <div className="message-header-wrapper">
+            <div className="message-avatar">
+              <div className="avatar-circle">
+                <img src={AIAvatar} alt="AI Avatar" />
+              </div>
+            </div>
+            <div className="message-content">
+              <div className="response-card">
+                <div className={`content-text markdown-body ${isExpanded ? 'expanded' : ''}`}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw, rehypeSanitize]}
+                    components={{
+                      code: ({node, inline, className, children, ...props}) => {
+                        const match = /language-(\w+)/.exec(className || '');
+                        return !inline ? (
+                          <pre className={className}>
+                            <code className={match ? `language-${match[1]}` : ''} {...props}>
+                              {children}
+                            </code>
+                          </pre>
+                        ) : (
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        );
+                      }
+                    }}
+                  >
+                    {displayedContent}
+                  </ReactMarkdown>
+                </div>
+                <div 
+                  className="expand-icon" 
+                  onClick={() => setIsExpanded(!isExpanded)}
+                >
+                  <IoChevronDownOutline size={20} />
+                </div>
+                {(isReportResponse && realJsonn?.download_url) && !isTyping && (
+                  <div className="report-actions">
+                    <button className="report-button" onClick={handleDownload}>
+                      <img src={downloadIcon} alt="Download" />
+                      Download Report
+                    </button>
+                    <button className="report-button" onClick={handleViewReport}>
+                      View Report
+                    </button>
+                  </div>
+                )}
+                <div className="status-indicator-bottom">
+                  {isTyping ? (
+                    <div className="typing-status">Typing...</div>
+                  ) : (
+                    <button className="copy-button" onClick={copyToClipboard}>
+                      <img src={isCopied ? tickIcon : copyIcon} alt={isCopied ? "Copied" : "Copy"} className="copy-icon" />
+                      {isCopied ? 'Copied!' : 'Copy'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ChatbotResponse;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+chatbotresose.css
+
+.message.bot {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 0;
+  width: 100%;
+}
+.message-container{
+  display: flex;
+  flex-direction: row;
+  width: 1042px;
+}
+
+.message-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.avatar-circle {
+  /* background-color: whitesmoke; */
+  border-radius: 59%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 19px;
+}
+
+.message-content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  /* margin-right:200px */
+}
+
+.message-header h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #111827;
+  font-weight: 500;
+  margin-top: 6px;
+}
+
+.message-body {
+  background-color: white;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.content-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #374151;
+  font-size: 14px;
+  gap: 8px;
+  /* padding: 1px; */
+  width: 1020px;
+}
+
+.markdown-body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  width: 1020px;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.markdown-body code {
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 85%;
+  background-color: rgba(175, 184, 193, 0.2);
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+}
+
+.markdown-body pre {
+  padding: 16px;
+  overflow: auto;
+  font-size: 85%;
+  line-height: 1.45;
+  background-color: #f6f8fa;
+  border-radius: 6px;
+}
+
+.markdown-body pre code {
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  border: 0;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 2em;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.markdown-body table {
+  border-spacing: 0;
+  border-collapse: collapse;
+  margin: 16px 0;
+}
+
+.markdown-body table th,
+.markdown-body table td {
+  padding: 6px 13px;
+  border: 1px solid #d0d7de;
+}
+
+.markdown-body table tr:nth-child(2n) {
+  background-color: #f6f8fa;
+}
+
+.markdown-body blockquote {
+  padding: 0 1em;
+  color: #57606a;
+  border-left: 0.25em solid #d0d7de;
+  margin: 16px 0;
+}
+
+.markdown-body hr {
+  height: 0.25em;
+  padding: 0;
+  margin: 24px 0;
+  background-color: #d0d7de;
+  border: 0;
+}
+
+.response-card {
+  background-color: #F9FAFB;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-left: 33px;
+  margin-bottom: 16px;
+  padding-left: 30px;
+  position: relative;
+  gap: 4px;
+  width: 1038px;
+  display: flex;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+}
+
+.expand-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  cursor: pointer;
+  color: #6B7280;
+  transition: transform 0.2s ease;
+}
+
+.expand-icon:hover {
+  color: #374151;
+}
+
+.expanded .expand-icon {
+  transform: rotate(180deg);
+}
+
+.content-line {
+  margin-bottom: 8px;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.report-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.report-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.report-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #fff;
+  border: 1px solid #4F46E5;
+  border-radius: 6px;
+  color: #4F46E5;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.report-button:hover {
+  background-color: #F5F3FF;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  background: white;
+  font-size: 14px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.action-button:hover {
+  background-color: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.action-button img {
+  width: 16px;
+  height: 16px;
+  opacity: 0.7;
+}
+
+.action-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.download-button {
+  background-color: #4F46E5;
+  color: white;
+  border: none;
+}
+
+.download-button:hover {
+  background-color: #4338CA;
+}
+
+.download-button img {
+  opacity: 1;
+}
+
+.view-button {
+  background-color: white;
+  color: #4F46E5;
+  border: 1px solid #4F46E5;
+}
+
+.view-button:hover {
+  background-color: #F5F3FF;
+}
+.messsage-header-wrapper {
+  display: flex;
+  /* align-items: center; */
+  padding-right: 367px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.copy-button {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #626060;
+}
+.status-indicator-bottom {
+  margin-top: 16px;
+  /* padding-left: 8px; */
+  font-size: 14px;
+  color: #626060;
+}
+
+.typing-status {
+  font-style: italic;
+  color: #626060;
+}
+
+.status-indicator-bottom .copy-button {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.status-indicator-bottom .copy-button:hover {
+  opacity: 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+scrollable
+***************************
+.message-container{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 900px;
+}
+
+
+.content-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.6;
+  width: 100%;
+  overflow-y: auto;
+  max-height: 450px;
+  padding-right: 20px;
+  margin-bottom: 8px;
+}
+
+.content-text::-webkit-scrollbar {
+  width: 8px;
+}
+
+.content-text::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.content-text::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.content-text::-webkit-scrollbar-thumb:hover {
+  background: #666;
+}
+
+.markdown-body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  width: 100%;
+  padding-bottom: 16px;
+}
+
+
+
+.response-card {
+  background-color: #F9FAFB;
+  border-radius: 12px;
+  padding: 24px;
+  margin-left: 33px;
+  margin-bottom: 16px;
+  position: relative;
+  gap: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: rgba(0, 0, 0, 0.25) 0px 14px 28px, rgba(0, 0, 0, 0.22) 0px 10px 10px;
+  overflow: hidden;
+}
+
+
+
+
+.report-actions {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid #E5E7EB;
+  display: flex;
+  gap: 12px;
+}
+
+
+
+
+
+@media screen and (max-width: 1024px) {
+  .message-container {
+    max-width: 700px;
+  }
+  
+  .response-card {
+    max-width: 600px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .message-container {
+    max-width: 500px;
+  }
+  
+  .response-card {
+    max-width: 400px;
+    margin-left: 16px;
+  }
+}
